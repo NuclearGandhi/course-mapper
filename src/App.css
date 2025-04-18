@@ -1,6 +1,11 @@
 #root {
   margin: 0 auto;
   text-align: center;
+  overflow: hidden !important;
+}
+
+body, html, .App {
+  overflow: hidden !important;
 }
 
 .logo {
@@ -37,4 +42,20 @@
 
 .read-the-docs {
   color: #888;
+}
+
+.custom-controls .react-flow__controls-button {
+  border-radius: 8px;
+  margin: 0 0 6px 0;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  padding: 0;
+  align-items: center;
+  justify-content: center;
+}
+
+.react-flow__panel {
+  margin: 32px;
 }

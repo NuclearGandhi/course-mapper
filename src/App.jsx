@@ -161,7 +161,10 @@ const App = () => {
           onNodeDoubleClick={(_, n) => setPopupCourse(rawCourses[n.id])}
         >
           <MiniMap nodeColor={n => highlighted.has(n.id) ? '#ff0' : '#23272f'} maskColor="#2229" style={{ background: '#23272f' }} />
-          <Controls style={{ color: '#fff' }} />
+          <Controls style={{ color: '#fff' }}
+            showInteractive={true}
+            className="custom-controls"
+          />
           <Background gap={16} color="#333" />
         </ReactFlow>
         {popupCourse && <InfoPopup course={popupCourse} onClose={() => setPopupCourse(null)} />}
