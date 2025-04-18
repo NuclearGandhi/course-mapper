@@ -1,5 +1,7 @@
 // All course graph helpers for the node map
 
+import dagre from 'dagre';
+
 // Parse prerequisites string to array of course numbers
 export function parsePrerequisites(prereqStr) {
   if (!prereqStr) return [];
@@ -80,4 +82,37 @@ export function courseNodesAndEdges(courseMap) {
     });
   });
   return { nodes, edges };
+}
+
+export function applyDagreLayout(nodes, edges) {
+  const g = new dagre.graphlib.Graph();
+  g.setGraph({ rankdir: 'TB', marginx: 50, marginy: 50 });
+  g.setDefaultEdgeLabel(() => ({}));
+
+  // Add nodes to the graph
+  nodes.forEach(node => {
+    g.setNode(node.id, { width: 180, height: 50 });
+  });
+
+  // Add edges to the graph
+  edges.forEach(edge => {
+    g.setEdge(edge.source, edge.target);
+  });
+
+  // Run the dagre layout
+  dagre.layout(g);
+
+  // Update node positions based on the layout
+  const updatedNodes = nodes.map(node => {
+    const nodeWithPosition = g.node(node.id);
+    return {
+      ...node,
+      position: {
+        x: nodeWithPosition.x,
+        y: nodeWithPosition.y,
+      },
+    };
+  });
+
+  return updatedNodes;
 }

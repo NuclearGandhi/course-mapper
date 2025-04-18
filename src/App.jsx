@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import ReactFlow, { Background, Controls, MiniMap } from 'reactflow';
 import 'reactflow/dist/style.css';
 import './App.css';
-import { buildCourseMap, mergeCourseMaps, courseNodesAndEdges } from './courseGraph';
+import { buildCourseMap, mergeCourseMaps, courseNodesAndEdges, applyDagreLayout } from './courseGraph';
 
 const App = () => {
   const [elements, setElements] = useState({ nodes: [], edges: [] });
@@ -16,14 +16,16 @@ const App = () => {
       const winterMap = buildCourseMap(winter, 'חורף');
       const springMap = buildCourseMap(spring, 'אביב');
       const merged = mergeCourseMaps(winterMap, springMap);
-      setElements(courseNodesAndEdges(merged));
+      const { nodes, edges } = courseNodesAndEdges(merged);
+      const layoutedNodes = applyDagreLayout(nodes, edges);
+      setElements({ nodes: layoutedNodes, edges });
     };
     fetchData();
   }, []);
 
   return (
     <div style={{ width: '100vw', height: '100vh', direction: 'rtl', background: '#181a20' }}>
-      <h1 style={{ textAlign: 'right', padding: 16, color: '#fff' }}>מפת קורסים - גרף קדם אינטראקטיבי</h1>
+      <h1 style={{ textAlign: 'center', margin: 0, color: '#fff' }}>מפת קורסים - גרף קדמים אינטראקטיבי</h1>
       <div style={{ width: '100%', height: '90vh' }}>
         <ReactFlow
           nodes={elements.nodes.map(node => ({
