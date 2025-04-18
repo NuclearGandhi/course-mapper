@@ -71,7 +71,7 @@ export function courseNodesAndEdges(courseMap) {
         id: id,
       },
       position: { x, y },
-      style: { minWidth: 180, maxWidth: 250, background: '#23272f', border: '1px solid #444', borderRadius: 8, padding: 8 },
+      style: { minWidth: 180, maxWidth: 250, borderRadius: 8, padding: 8 },
     });
   });
   nodeIds.forEach(id => {
@@ -80,7 +80,7 @@ export function courseNodesAndEdges(courseMap) {
       if (courseMap[prereq]) {
         const edgeId = `${prereq}->${id}`;
         if (!edgeSet.has(edgeId)) {
-          edges.push({ id: edgeId, source: prereq, target: id, animated: false, style: { stroke: '#0af' } });
+          edges.push({ id: edgeId, source: prereq, target: id, animated: false });
           edgeSet.add(edgeId);
         }
       }

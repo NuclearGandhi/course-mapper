@@ -44,7 +44,6 @@ const App = () => {
   const [highlighted, setHighlighted] = useState(new Set());
   const [popupCourse, setPopupCourse] = useState(null);
   const [rawCourses, setRawCourses] = useState({});
-  const [hideDisconnected, setHideDisconnected] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -87,40 +86,10 @@ const App = () => {
     }
   }, [selected, courseMap]);
 
-  useEffect(() => {
-    // Filter out disconnected nodes if hideDisconnected is true
-    if (hideDisconnected) {
-      // Find all connected node ids (those with at least one parent or child)
-      const connected = new Set();
-      elements.edges.forEach(edge => {
-        connected.add(edge.source);
-        connected.add(edge.target);
-      });
-      setElements({
-        nodes: elements.nodes.filter(node => connected.has(node.id)),
-        edges: elements.edges,
-      });
-    } else {
-      setElements(elements);
-    }
-  }, [courseMap, hideDisconnected]);
-
   return (
-    <div style={{ width: '100vw', height: '100vh', background: '#181a20' }}>
-      <h1 style={{ textAlign: 'center', margin: 0, color: '#fff' }}>מפת קורסים - גרף קדמים אינטראקטיבי</h1>
-      <div style={{ textAlign: 'center', marginBottom: 8 }}>
-        <label style={{ color: '#fff', fontSize: 16 }}>
-          <input
-            type="checkbox"
-            checked={hideDisconnected}
-            onChange={e => setHideDisconnected(e.target.checked)}
-            style={{ marginLeft: 8 }}
-          />
-          הסתר קורסים מנותקים (ברירת מחדל)
-        </label>
-      </div>
-      <div style={{ width: '100%', height: '90vh' }}>
+    <div style={{ width: '100vw', height: '100vh' }}>
         <ReactFlow
+          colorMode="dark"
           nodes={elements.nodes.map(node => ({
             ...node,
             data: {
@@ -136,8 +105,6 @@ const App = () => {
             },
             style: {
               ...node.style,
-              border: node.id === selected ? '3px solid #ff0' : highlighted.has(node.id) ? '2px solid #ff0' : node.style.border,
-              boxShadow: node.id === selected ? '0 0 12px #ff0' : undefined,
               zIndex: node.id === selected ? 10 : undefined,
             },
             selected: node.id === selected,
@@ -146,30 +113,25 @@ const App = () => {
             onDoubleClick: (_, n) => setPopupCourse(rawCourses[n.id]),
           }))}
           edges={elements.edges.map(edge => ({
-            ...edge,
-            style: highlighted.has(edge.source) && highlighted.has(edge.target)
-              ? { ...edge.style, stroke: '#ff0', strokeWidth: 3 }
-              : edge.style,
+            ...edge
           }))}
           fitView
           panOnDrag
           nodesDraggable
           nodesConnectable={false}
           elementsSelectable
-          style={{ background: '#181a20' }}
           onNodeClick={(_, n) => setSelected(n.id)}
           onNodeDoubleClick={(_, n) => setPopupCourse(rawCourses[n.id])}
         >
-          <MiniMap nodeColor={n => highlighted.has(n.id) ? '#ff0' : '#23272f'} maskColor="#2229" style={{ background: '#23272f' }} />
-          <Controls style={{ color: '#fff' }}
+          <MiniMap/>
+          <Controls 
             showInteractive={true}
             className="custom-controls"
           />
-          <Background gap={16} color="#333" />
+          <Background gap={16}  />
         </ReactFlow>
         {popupCourse && <InfoPopup course={popupCourse} onClose={() => setPopupCourse(null)} />}
       </div>
-    </div>
   );
 };
 
