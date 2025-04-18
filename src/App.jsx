@@ -44,6 +44,7 @@ const App = () => {
   const [highlighted, setHighlighted] = useState(new Set());
   const [popupCourse, setPopupCourse] = useState(null);
   const [rawCourses, setRawCourses] = useState({});
+  const [hideDisconnected, setHideDisconnected] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -86,9 +87,38 @@ const App = () => {
     }
   }, [selected, courseMap]);
 
+  useEffect(() => {
+    // Filter out disconnected nodes if hideDisconnected is true
+    if (hideDisconnected) {
+      // Find all connected node ids (those with at least one parent or child)
+      const connected = new Set();
+      elements.edges.forEach(edge => {
+        connected.add(edge.source);
+        connected.add(edge.target);
+      });
+      setElements({
+        nodes: elements.nodes.filter(node => connected.has(node.id)),
+        edges: elements.edges,
+      });
+    } else {
+      setElements(elements);
+    }
+  }, [courseMap, hideDisconnected]);
+
   return (
     <div style={{ width: '100vw', height: '100vh', background: '#181a20' }}>
       <h1 style={{ textAlign: 'center', margin: 0, color: '#fff' }}>מפת קורסים - גרף קדמים אינטראקטיבי</h1>
+      <div style={{ textAlign: 'center', marginBottom: 8 }}>
+        <label style={{ color: '#fff', fontSize: 16 }}>
+          <input
+            type="checkbox"
+            checked={hideDisconnected}
+            onChange={e => setHideDisconnected(e.target.checked)}
+            style={{ marginLeft: 8 }}
+          />
+          הסתר קורסים מנותקים (ברירת מחדל)
+        </label>
+      </div>
       <div style={{ width: '100%', height: '90vh' }}>
         <ReactFlow
           nodes={elements.nodes.map(node => ({
