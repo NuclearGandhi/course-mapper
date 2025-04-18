@@ -55,16 +55,16 @@ def fetch_and_save_courses(semester, filename):
 def main():
     last_semesters = get_last_semesters()
     # Save the last semesters to a JSON file
-    with open("last_semesters.json", "w") as f:
+    with open("data/last_semesters.json", "w") as f:
         json.dump(last_semesters, f, indent=4)
     print("Updated last_semesters.json")
 
     latest_winter, latest_spring = get_latest_two_semesters(last_semesters)
 
     if latest_winter:
-        fetch_and_save_courses(latest_winter, "last_winter_semester.json")
+        fetch_and_save_courses(latest_winter, "data/last_winter_semester.json")
     if latest_spring:
-        fetch_and_save_courses(latest_spring, "last_spring_semester.json")
+        fetch_and_save_courses(latest_spring, "data/last_spring_semester.json")
     print("Updated last_winter_semester.json and last_spring_semester.json")
 
 if __name__ == "__main__":

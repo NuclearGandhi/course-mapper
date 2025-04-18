@@ -10,8 +10,8 @@ const App = () => {
   useEffect(() => {
     const fetchData = async () => {
       const [winter, spring] = await Promise.all([
-        fetch('/last_winter_semester.json').then(r => r.json()),
-        fetch('/last_spring_semester.json').then(r => r.json()).catch(() => []),
+        fetch('/data/last_winter_semester.json').then(r => r.json()),
+        fetch('/data/last_spring_semester.json').then(r => r.json()).catch(() => []),
       ]);
       const winterMap = buildCourseMap(winter, 'חורף');
       const springMap = buildCourseMap(spring, 'אביב');
