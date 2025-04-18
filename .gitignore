@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+last_semesters.json
+last_spring_semester.json
+last_winter_semester.json

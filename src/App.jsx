@@ -6,21 +6,19 @@ const App = () => {
 
   useEffect(() => {
     const fetchCourses = async () => {
-      const lastSemestersUrl = "https://michael-maltsev.github.io/technion-sap-info-fetcher/last_semesters.json";
-      const coursesUrl = "https://michael-maltsev.github.io/technion-sap-info-fetcher/courses.json";
-
       try {
-        // Fetch last semester data
-        const lastSemestersResponse = await fetch(lastSemestersUrl);
-        const lastSemestersData = await lastSemestersResponse.json();
-        const lastSemesterKey = Object.keys(lastSemestersData).pop();
 
-        // Fetch courses data for the last semester
-        const coursesResponse = await fetch(coursesUrl);
-        const coursesData = await coursesResponse.json();
+        const winterCoursesResponse = await fetch('/last_winter_semester.json');
+        const winterCoursesData = await winterCoursesResponse.json();
 
-        // Filter and map courses data
-        const filteredCourses = Object.values(coursesData[lastSemesterKey] || {}).map(course => ({
+        const springCoursesResponse = await fetch('/last_spring_semester.json');
+        const springCoursesData = await springCoursesResponse.json();
+
+        // Combine winter and spring courses
+        const combinedCourses = { ...winterCoursesData, ...springCoursesData };
+
+        // Process combined courses
+        const filteredCourses = Object.values(combinedCourses).map(course => ({
           id: course.general["מספר מקצוע"],
           name: course.general["שם מקצוע"],
           prerequisites: course.general["מקצועות קדם"]?.split(/\s*או\s*|\s*\)\s*|\s*\(\s*/).filter(Boolean) || []
