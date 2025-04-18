@@ -37,7 +37,7 @@ const App = () => {
   }, []);
 
   return (
-    <div style={{ width: '100vw', height: '100vh', direction: 'rtl', background: '#181a20' }}>
+    <div style={{ width: '100vw', height: '100vh', background: '#181a20' }}>
       <h1 style={{ textAlign: 'center', margin: 0, color: '#fff' }}>מפת קורסים - גרף קדמים אינטראקטיבי</h1>
       <div style={{ width: '100%', height: '90vh' }}>
         <ReactFlow
@@ -46,7 +46,7 @@ const App = () => {
             data: {
               ...node.data,
               label: (
-                <div style={{ direction: 'rtl', textAlign: 'right', color: '#fff' }}>
+                <div style={{ textAlign: 'right', color: '#fff' }}> {/* Only text is right-aligned */}
                   <b>{node.data.name}</b>
                   <div style={{ fontSize: 12, color: '#0af' }}>
                     {node.data.id} [{node.data.semesters && node.data.semesters.map(s => s === 'חורף' ? 'חורף' : 'אביב').join(', ')}]
@@ -61,7 +61,7 @@ const App = () => {
           nodesDraggable
           nodesConnectable={false}
           elementsSelectable
-          style={{ direction: 'rtl', background: '#181a20' }}
+          style={{ background: '#181a20' }}
         >
           <MiniMap nodeColor={() => '#23272f'} maskColor="#2229" style={{ background: '#23272f' }} />
           <Controls style={{ background: '#23272f', color: '#fff' }} />

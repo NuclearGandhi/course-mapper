@@ -86,7 +86,7 @@ export function courseNodesAndEdges(courseMap) {
 
 export function applyDagreLayout(nodes, edges) {
   const g = new dagre.graphlib.Graph();
-  g.setGraph({ rankdir: 'TB', marginx: 50, marginy: 50 });
+  g.setGraph({ rankdir: 'TB', marginx: 50, marginy: 100 }); // Increased marginy for larger vertical spacing
   g.setDefaultEdgeLabel(() => ({}));
 
   // Add nodes to the graph
@@ -108,8 +108,8 @@ export function applyDagreLayout(nodes, edges) {
     return {
       ...node,
       position: {
-        x: nodeWithPosition.x,
-        y: nodeWithPosition.y,
+        x: nodeWithPosition.x, // Center the node horizontally
+        y: nodeWithPosition.y, // Center the node vertically
       },
     };
   });
