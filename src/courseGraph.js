@@ -53,6 +53,7 @@ export function mergeCourseMaps(winterMap, springMap) {
 export function courseNodesAndEdges(courseMap) {
   const nodes = [];
   const edges = [];
+  const edgeSet = new Set(); // Track unique edge ids
   const nodeIds = Object.keys(courseMap);
   const xStep = 350;
   const yStep = 120;
@@ -77,7 +78,11 @@ export function courseNodesAndEdges(courseMap) {
     const course = courseMap[id];
     course.prereqs.forEach(prereq => {
       if (courseMap[prereq]) {
-        edges.push({ id: `${prereq}->${id}`, source: prereq, target: id, animated: false, style: { stroke: '#0af' } });
+        const edgeId = `${prereq}->${id}`;
+        if (!edgeSet.has(edgeId)) {
+          edges.push({ id: edgeId, source: prereq, target: id, animated: false, style: { stroke: '#0af' } });
+          edgeSet.add(edgeId);
+        }
       }
     });
   });

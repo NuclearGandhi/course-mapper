@@ -96,7 +96,7 @@ const App = () => {
             data: {
               ...node.data,
               label: (
-                <div style={{ textAlign: 'right', color: highlighted.has(node.id) ? '#ff0' : '#fff', fontWeight: node.id === selected ? 'bold' : 'normal' }}>
+                <div style={{ textAlign: 'right', color: highlighted.has(node.id) ? '#ff0' : '#fff' }}>
                   <b>{node.data.name}</b>
                   <div style={{ fontSize: 12, color: '#0af' }}>
                     {node.data.id} [{node.data.semesters && node.data.semesters.map(s => s === 'חורף' ? 'חורף' : 'אביב').join(', ')}]
