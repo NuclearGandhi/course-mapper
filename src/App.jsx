@@ -9,6 +9,15 @@ const App = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      // Fetch and parse the course numbers CSV
+      const csvText = await fetch('/path/course_numbers.csv').then(r => r.text());
+      const courseNumbers = new Set(
+        csvText
+          .split('\n')
+          .map(line => line.trim())
+          .filter(line => /^\d{8}$/.test(line))
+      );
+      // Fetch course data
       const [winter, spring] = await Promise.all([
         fetch('/data/last_winter_semester.json').then(r => r.json()),
         fetch('/data/last_spring_semester.json').then(r => r.json()).catch(() => []),
@@ -16,7 +25,11 @@ const App = () => {
       const winterMap = buildCourseMap(winter, 'חורף');
       const springMap = buildCourseMap(spring, 'אביב');
       const merged = mergeCourseMaps(winterMap, springMap);
-      const { nodes, edges } = courseNodesAndEdges(merged);
+      // Filter merged map to only include courses in courseNumbers
+      const filtered = Object.fromEntries(
+        Object.entries(merged).filter(([num]) => courseNumbers.has(num))
+      );
+      const { nodes, edges } = courseNodesAndEdges(filtered);
       const layoutedNodes = applyDagreLayout(nodes, edges);
       setElements({ nodes: layoutedNodes, edges });
     };
