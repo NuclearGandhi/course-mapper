@@ -4,12 +4,21 @@ import 'reactflow/dist/style.css';
 import './App.css';
 import { buildCourseMap, mergeCourseMaps, courseNodesAndEdges, applyDagreLayout } from './courseGraph';
 
+function getAllPrereqs(courseMap, courseNum, visited = new Set()) {
+  if (!courseMap[courseNum] || visited.has(courseNum)) return visited;
+  visited.add(courseNum);
+  courseMap[courseNum].prereqs.forEach(pr => getAllPrereqs(courseMap, pr, visited));
+  return visited;
+}
+
 const App = () => {
   const [elements, setElements] = useState({ nodes: [], edges: [] });
+  const [courseMap, setCourseMap] = useState({});
+  const [selected, setSelected] = useState(null);
+  const [highlighted, setHighlighted] = useState(new Set());
 
   useEffect(() => {
     const fetchData = async () => {
-      // Fetch and parse the course numbers CSV
       const csvText = await fetch('/path/course_numbers.csv').then(r => r.text());
       const courseNumbers = new Set(
         csvText
@@ -17,7 +26,6 @@ const App = () => {
           .map(line => line.trim())
           .filter(line => /^\d{8}$/.test(line))
       );
-      // Fetch course data
       const [winter, spring] = await Promise.all([
         fetch('/data/last_winter_semester.json').then(r => r.json()),
         fetch('/data/last_spring_semester.json').then(r => r.json()).catch(() => []),
@@ -25,16 +33,24 @@ const App = () => {
       const winterMap = buildCourseMap(winter, 'חורף');
       const springMap = buildCourseMap(spring, 'אביב');
       const merged = mergeCourseMaps(winterMap, springMap);
-      // Filter merged map to only include courses in courseNumbers
       const filtered = Object.fromEntries(
         Object.entries(merged).filter(([num]) => courseNumbers.has(num))
       );
+      setCourseMap(filtered);
       const { nodes, edges } = courseNodesAndEdges(filtered);
       const layoutedNodes = applyDagreLayout(nodes, edges);
       setElements({ nodes: layoutedNodes, edges });
     };
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (selected && courseMap[selected]) {
+      setHighlighted(new Set(getAllPrereqs(courseMap, selected)));
+    } else {
+      setHighlighted(new Set());
+    }
+  }, [selected, courseMap]);
 
   return (
     <div style={{ width: '100vw', height: '100vh', background: '#181a20' }}>
@@ -46,25 +62,40 @@ const App = () => {
             data: {
               ...node.data,
               label: (
-                <div style={{ textAlign: 'right', color: '#fff' }}> {/* Only text is right-aligned */}
+                <div style={{ textAlign: 'right', color: highlighted.has(node.id) ? '#ff0' : '#fff'}}>
                   <b>{node.data.name}</b>
                   <div style={{ fontSize: 12, color: '#0af' }}>
                     {node.data.id} [{node.data.semesters && node.data.semesters.map(s => s === 'חורף' ? 'חורף' : 'אביב').join(', ')}]
                   </div>
                 </div>
               )
-            }
+            },
+            style: {
+              ...node.style,
+              border: node.id === selected ? '3px solid #ff0' : highlighted.has(node.id) ? '2px solid #ff0' : node.style.border,
+              boxShadow: node.id === selected ? '0 0 12px #ff0' : undefined,
+              zIndex: node.id === selected ? 10 : undefined,
+            },
+            selected: node.id === selected,
+            draggable: true,
+            onClick: (_, n) => setSelected(n.id),
           }))}
-          edges={elements.edges}
+          edges={elements.edges.map(edge => ({
+            ...edge,
+            style: highlighted.has(edge.source) && highlighted.has(edge.target)
+              ? { ...edge.style, stroke: '#ff0', strokeWidth: 3 }
+              : edge.style,
+          }))}
           fitView
           panOnDrag
           nodesDraggable
           nodesConnectable={false}
           elementsSelectable
           style={{ background: '#181a20' }}
+          onNodeClick={(_, n) => setSelected(n.id)}
         >
-          <MiniMap nodeColor={() => '#23272f'} maskColor="#2229" style={{ background: '#23272f' }} />
-          <Controls style={{ background: '#23272f', color: '#fff' }} />
+          <MiniMap nodeColor={n => highlighted.has(n.id) ? '#ff0' : '#23272f'} maskColor="#2229" style={{ background: '#23272f' }} />
+          <Controls style={{ color: '#fff' }} />
           <Background gap={16} color="#333" />
         </ReactFlow>
       </div>
