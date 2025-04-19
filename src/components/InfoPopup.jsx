@@ -51,28 +51,13 @@ const InfoPopup = ({ course, onClose, courseMap }) => {
           ? prereqs.map((pr, i) => (
               <span
                 key={pr}
-                style={{ position: 'relative', cursor: 'pointer', marginLeft: 4, marginRight: 4 }}
+                className="prereq-hoverable"
                 onMouseEnter={() => setHoveredPrereq(pr)}
                 onMouseLeave={() => setHoveredPrereq(null)}
               >
                 {pr}
                 {hoveredPrereq === pr && courseMap[pr] && (
-                  <span
-                    style={{
-                      position: 'absolute',
-                      bottom: '120%',
-                      left: '50%',
-                      transform: 'translateX(-50%)',
-                      background: '#23272f',
-                      color: '#fff',
-                      padding: '4px 10px',
-                      borderRadius: 6,
-                      whiteSpace: 'nowrap',
-                      fontSize: 13,
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.18)',
-                      zIndex: 1001,
-                    }}
-                  >
+                  <span className="prereq-tooltip">
                     {courseMap[pr].name}
                   </span>
                 )}

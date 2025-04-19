@@ -210,3 +210,34 @@ body, html, .App {
 .prereq-and.prereq-or.react-flow__node {
   border: solid 2px var(--xy-theme-highlight) !important;
 }
+
+.prereq-hoverable {
+  position: relative;
+  cursor: pointer;
+  margin-left: 4px;
+  margin-right: 4px;
+  border-bottom: 1px dotted #7c4dff;
+  color: #7c4dff;
+  transition: color 0.15s;
+}
+.prereq-hoverable:hover {
+  color: #fff;
+  background: #7c4dff;
+  border-radius: 4px;
+}
+.prereq-tooltip {
+  position: absolute;
+  bottom: 120%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fffbe6;
+  color: #23272f;
+  padding: 4px 12px;
+  border-radius: 8px;
+  white-space: nowrap;
+  font-size: 13px;
+  box-shadow: 0 2px 12px rgba(124,77,255,0.18);
+  border: 1px solid #7c4dff;
+  z-index: 1001;
+  pointer-events: none;
+}
