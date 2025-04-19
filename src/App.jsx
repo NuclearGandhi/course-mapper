@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import {ReactFlow, Background, Controls, MiniMap } from '@xyflow/react';
+import { Background, Controls, MiniMap } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import './App.css';
 import { buildCourseMap, mergeCourseMaps, courseNodesAndEdges, applyDagreLayout } from './courseGraph';
 import InfoPopup from './components/InfoPopup';
+import CourseGraphView from './components/CourseGraphView';
 
 function getAllPrereqs(courseMap, courseNum, visited = new Set()) {
   if (!courseMap[courseNum] || visited.has(courseNum)) return visited;
@@ -94,48 +95,19 @@ const App = () => {
 
   return (
     <div style={{ width: '100vw', height: '100vh' }}>
-        <ReactFlow
-          nodes={elements.nodes.map(node => ({
-            ...node,
-            data: {
-              ...node.data,
-              label: (
-                <div className="react-flow__node-label">
-                  <b>{node.data.name}</b>
-                  <div className="react-flow__node-label-id">
-                    {node.data.id} [{node.data.semesters && node.data.semesters.map(s => s === 'חורף' ? 'חורף' : 'אביב').join(', ')}]
-                  </div>
-                </div>
-              )
-            },
-            className: `${node.className || ''}
-              ${highlightedAnd.has(node.id) ? ' prereq-and' : ''}
-              ${highlightedOr.has(node.id) ? ' prereq-or' : ''}
-              ${highlighted.has(node.id) ? ' highlighted' : ''}`,
-            style: {
-              ...node.style,
-              zIndex: node.id === selected ? 10 : undefined,
-            },
-          }))}
-          edges={elements.edges.map(edge => ({
-            ...edge
-          }))}
-          colorMode="dark"
-          fitView
-          panOnDrag
-          nodesDraggable
-          nodesConnectable={false}
-          elementsSelectable
+        <CourseGraphView
+          nodes={elements.nodes}
+          edges={elements.edges}
+          selected={selected}
+          highlighted={highlighted}
+          highlightedAnd={highlightedAnd}
+          highlightedOr={highlightedOr}
+          style={{ width: '100vw', height: '100vh' }}
           onNodeClick={(_, n) => setSelected(n.id)}
           onNodeDoubleClick={(_, n) => setPopupCourse(rawCourses[n.id])}
-          attributionPosition='top-left'
-        >
-          <MiniMap nodeStrokeColor={n => n.data.color} nodeColor={n => n.data.color} nodeBorderRadius={2} />
-          <Controls 
-            className="custom-controls"
-          />
-          <Background/>
-        </ReactFlow>
+          showControls={true}
+          showMiniMap={true}
+        />
         {popupCourse && <InfoPopup course={popupCourse} onClose={() => setPopupCourse(null)} courseMap={courseMap} />}
       </div>
   );
