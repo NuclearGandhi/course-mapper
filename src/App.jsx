@@ -12,10 +12,10 @@ function getAllPrereqs(courseMap, courseNum, visited = new Set()) {
 }
 
 const InfoPopup = ({ course, onClose }) => (
-  <div className="info-popup">
-    <button className="info-popup-close" onClick={onClose}>×</button>
-    <h2 className="info-popup-title">{course['שם מקצוע']}</h2>
-    <div className="info-popup-details">
+  <div className="react-flow__info-popup">
+    <button className="react-flow__info-popup-close" onClick={onClose}>×</button>
+    <h2 className="react-flow__info-popup-title">{course['שם מקצוע']}</h2>
+    <div className="react-flow__info-popup-details">
       <b>מספר מקצוע:</b> {course['מספר מקצוע']}<br />
       <b>נקודות:</b> {course['נקודות'] || '-'}<br />
       <b>קדם:</b> {course['מקצועות קדם'] || '-'}<br />
@@ -82,9 +82,9 @@ const App = () => {
             data: {
               ...node.data,
               label: (
-                <div className={`node-label${highlighted.has(node.id) ? ' highlighted-label' : ''}`}>
+                <div className="react-flow__node-label">
                   <b>{node.data.name}</b>
-                  <div className="node-label-id">
+                  <div className="react-flow__node-label-id">
                     {node.data.id} [{node.data.semesters && node.data.semesters.map(s => s === 'חורף' ? 'חורף' : 'אביב').join(', ')}]
                   </div>
                 </div>
