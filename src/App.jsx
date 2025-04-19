@@ -3,6 +3,7 @@ import {ReactFlow, Background, Controls, MiniMap } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import './App.css';
 import { buildCourseMap, mergeCourseMaps, courseNodesAndEdges, applyDagreLayout } from './courseGraph';
+import InfoPopup from './components/InfoPopup';
 
 function getAllPrereqs(courseMap, courseNum, visited = new Set()) {
   if (!courseMap[courseNum] || visited.has(courseNum)) return visited;
@@ -10,19 +11,6 @@ function getAllPrereqs(courseMap, courseNum, visited = new Set()) {
   courseMap[courseNum].prereqs.forEach(pr => getAllPrereqs(courseMap, pr, visited));
   return visited;
 }
-
-const InfoPopup = ({ course, onClose }) => (
-  <div className="react-flow__info-popup">
-    <button className="react-flow__info-popup-close" onClick={onClose}>×</button>
-    <h2 className="react-flow__info-popup-title">{course['שם מקצוע']}</h2>
-    <div className="react-flow__info-popup-details">
-      <b>מספר מקצוע:</b> {course['מספר מקצוע']}<br />
-      <b>נקודות:</b> {course['נקודות'] || '-'}<br />
-      <b>קדם:</b> {course['מקצועות קדם'] || '-'}<br />
-      <b>סילבוס:</b> {course['סילבוס'] || '-'}<br />
-    </div>
-  </div>
-);
 
 const App = () => {
   const [elements, setElements] = useState({ nodes: [], edges: [] });
