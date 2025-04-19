@@ -10,11 +10,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@xyflow/react": "^12.6.0",
     "dagre": "^0.8.5",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-window": "^1.8.11",
-    "reactflow": "^11.11.4"
+    "react-window": "^1.8.11"
   },
   "devDependencies": {
     "@eslint/js": "^9.22.0",

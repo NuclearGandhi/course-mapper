@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import ReactFlow, { Background, Controls, MiniMap } from 'reactflow';
-import 'reactflow/dist/style.css';
+import {ReactFlow, Background, Controls, MiniMap } from '@xyflow/react';
+import '@xyflow/react/dist/style.css';
 import './App.css';
 import { buildCourseMap, mergeCourseMaps, courseNodesAndEdges, applyDagreLayout } from './courseGraph';
 
@@ -125,10 +125,9 @@ const App = () => {
         >
           <MiniMap/>
           <Controls 
-            showInteractive={true}
             className="custom-controls"
           />
-          <Background gap={16}  />
+          <Background/>
         </ReactFlow>
         {popupCourse && <InfoPopup course={popupCourse} onClose={() => setPopupCourse(null)} />}
       </div>
