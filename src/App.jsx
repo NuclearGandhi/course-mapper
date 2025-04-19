@@ -51,6 +51,14 @@ const App = () => {
       const filtered = Object.fromEntries(
         Object.entries(merged).filter(([num]) => courseNumbers.has(num))
       );
+      // Find missing prereqs
+      for (const course of Object.values(filtered)) {
+        for (const prereq of course.prereqs) {
+          if (!filtered[prereq] && merged[prereq]) {
+            filtered[prereq] = merged[prereq];
+          }
+        }
+      }
       setCourseMap(filtered);
       // Save raw course info for popups
       const raw = {};
