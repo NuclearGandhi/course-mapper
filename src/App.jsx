@@ -136,7 +136,7 @@ const App = () => {
           />
           <Background/>
         </ReactFlow>
-        {popupCourse && <InfoPopup course={popupCourse} onClose={() => setPopupCourse(null)} />}
+        {popupCourse && <InfoPopup course={popupCourse} onClose={() => setPopupCourse(null)} courseMap={courseMap} />}
       </div>
   );
 };
