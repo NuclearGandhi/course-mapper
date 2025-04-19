@@ -35,6 +35,7 @@ const App = () => {
   const [highlighted, setHighlighted] = useState(new Set());
   const [highlightedAnd, setHighlightedAnd] = useState(new Set());
   const [highlightedOr, setHighlightedOr] = useState(new Set());
+  const [highlightedEdges, setHighlightedEdges] = useState(new Set());
   const [popupCourse, setPopupCourse] = useState(null);
   const [rawCourses, setRawCourses] = useState({});
 
@@ -86,10 +87,18 @@ const App = () => {
       const highlights = collectPrereqHighlights(tree);
       setHighlightedAnd(highlights.and);
       setHighlightedOr(highlights.or);
+      // Compute highlighted edges
+      const highlightedSet = new Set(getAllPrereqs(courseMap, selected));
+      const { edges } = courseNodesAndEdges(courseMap);
+      const edgeIds = edges
+        .filter(e => highlightedSet.has(e.source) && highlightedSet.has(e.target))
+        .map(e => e.id);
+      setHighlightedEdges(new Set(edgeIds));
     } else {
       setHighlighted(new Set());
       setHighlightedAnd(new Set());
       setHighlightedOr(new Set());
+      setHighlightedEdges(new Set());
     }
   }, [selected, courseMap]);
 
@@ -102,6 +111,7 @@ const App = () => {
           highlighted={highlighted}
           highlightedAnd={highlightedAnd}
           highlightedOr={highlightedOr}
+          highlightedEdges={highlightedEdges}
           style={{ width: '100vw', height: '100vh' }}
           onNodeClick={(_, n) => setSelected(n.id)}
           onNodeDoubleClick={(_, n) => setPopupCourse(rawCourses[n.id])}

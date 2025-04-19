@@ -133,6 +133,12 @@ body, html, .App {
   stroke: var(--xy-theme-edge-hover);
 }
 
+/* Highlighted edge style */
+.react-flow__edge.highlighted path {
+  stroke: var(--xy-theme-highlight, #F57DBD) !important;
+  z-index: 10;
+}
+
 .react-flow__handle {
   background-color: var(--xy-handle-background-color-default);
 }

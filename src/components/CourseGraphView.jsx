@@ -3,7 +3,7 @@ import { ReactFlow, Background, Controls, MiniMap } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
 // General reusable course graph view
-const CourseGraphView = ({ nodes, edges, selected, highlighted, highlightedAnd, highlightedOr, showControls, showMiniMap, style, ...props }) => {
+const CourseGraphView = ({ nodes, edges, selected, highlighted, highlightedAnd, highlightedOr, highlightedEdges, showControls, showMiniMap, style, ...props }) => {
   return (
     <div style={style}>
       <ReactFlow
@@ -27,7 +27,10 @@ const CourseGraphView = ({ nodes, edges, selected, highlighted, highlightedAnd, 
             ${selected === node.id ? ' selected' : ''}`,
         }))}
         colorMode='dark'
-        edges={edges}
+        edges={edges.map(edge => ({
+          ...edge,
+          className: `${edge.className || ''}${highlightedEdges?.has?.(edge.id) ? ' highlighted' : ''}`
+        }))}
         fitView
         panOnDrag
         zoomOnScroll
