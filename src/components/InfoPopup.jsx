@@ -8,14 +8,14 @@ const InfoPopup = ({ course, onClose, courseMap }) => {
   const courseId = course?.['מספר מקצוע'];
   // Build subgraph for the popup: include all prereqs and all dependents recursively
   // Collect all prerequisites recursively
-  const collectAllPrereqs = (courseId, map, acc = {}) => {
+  const collectAllPrereqs = React.useCallback((courseId, map, acc = {}) => {
     if (!map[courseId] || acc[courseId]) return acc;
     acc[courseId] = map[courseId];
     map[courseId].prereqs.forEach(pr => collectAllPrereqs(pr, map, acc));
     return acc;
-  };
+  }, []);
   // Collect all dependents recursively
-  const collectAllDependents = (courseId, map, acc = {}) => {
+  const collectAllDependents = React.useCallback((courseId, map, acc = {}) => {
     for (const [id, course] of Object.entries(map)) {
       if (course.prereqs.includes(courseId) && !acc[id]) {
         acc[id] = course;
@@ -23,16 +23,22 @@ const InfoPopup = ({ course, onClose, courseMap }) => {
       }
     }
     return acc;
-  };
+  }, []);
   const subCourseMap = React.useMemo(() => {
     if (!courseId) return {};
     // Merge all prereqs and all dependents (including the course itself)
     const prereqs = collectAllPrereqs(courseId, courseMap);
     const dependents = collectAllDependents(courseId, courseMap);
     return { ...prereqs, ...dependents };
-  }, [courseId, courseMap]);
+  }, [courseId, courseMap, collectAllPrereqs, collectAllDependents]);
   const { nodes, edges } = courseNodesAndEdges(subCourseMap);
   const layoutedNodes = applyDagreLayout(nodes, edges);
+
+  const prereqs = courseMap[courseId]?.prereqs || [];
+
+  // Helper for tooltip state
+  const [hoveredPrereq, setHoveredPrereq] = React.useState(null);
+
   return (
     <div className="react-flow__info-popup">
       <button className="react-flow__info-popup-close" onClick={onClose}>×</button>
@@ -40,7 +46,41 @@ const InfoPopup = ({ course, onClose, courseMap }) => {
       <div className="react-flow__info-popup-details">
         <b>מספר מקצוע:</b> {course['מספר מקצוע']}<br />
         <b>נקודות:</b> {course['נקודות'] || '-'}<br />
-        <b>קדם:</b> {course['מקצועות קדם'] || '-'}<br />
+        <b>קדמים:</b>{' '}
+        {Array.isArray(prereqs) && prereqs.length > 0
+          ? prereqs.map((pr, i) => (
+              <span
+                key={pr}
+                style={{ position: 'relative', cursor: 'pointer', marginLeft: 4, marginRight: 4 }}
+                onMouseEnter={() => setHoveredPrereq(pr)}
+                onMouseLeave={() => setHoveredPrereq(null)}
+              >
+                {pr}
+                {hoveredPrereq === pr && courseMap[pr] && (
+                  <span
+                    style={{
+                      position: 'absolute',
+                      bottom: '120%',
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      background: '#23272f',
+                      color: '#fff',
+                      padding: '4px 10px',
+                      borderRadius: 6,
+                      whiteSpace: 'nowrap',
+                      fontSize: 13,
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.18)',
+                      zIndex: 1001,
+                    }}
+                  >
+                    {courseMap[pr].name}
+                  </span>
+                )}
+                {i < prereqs.length - 1 && ','}
+              </span>
+            ))
+          : '-'}
+        <br />
         <b>סילבוס:</b> {course['סילבוס'] || '-'}<br />
       </div>
       <CourseGraphView

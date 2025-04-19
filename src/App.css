@@ -196,6 +196,7 @@ body, html, .App {
   margin-top: 0;
 }
 .react-flow__info-popup-details {
+  direction: rtl;
   text-align: right;
   font-size: 15px;
 }
