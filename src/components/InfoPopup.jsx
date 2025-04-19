@@ -40,7 +40,24 @@ const InfoPopup = ({ course, onClose, courseMap }) => {
       </div>
       <div style={{ width: '100%', height: 180, margin: '16px auto 0 auto', background: '#23272f', borderRadius: 8 }}>
         <ReactFlow
-          nodes={layoutedNodes}
+          nodes={layoutedNodes.map(node => ({
+            ...node,
+            data: {
+              ...node.data,
+              label: (
+                <div className="react-flow__node-label">
+                  <b>{node.data.name}</b>
+                  <div className="react-flow__node-label-id">{node.data.id}</div>
+                </div>
+              )
+            },
+            className: node.className,
+            style: {
+              ...node.style,
+              borderRadius: '8px'
+            }
+          }))}
+          colorMode='dark'
           edges={edges}
           fitView
           panOnDrag
@@ -52,6 +69,7 @@ const InfoPopup = ({ course, onClose, courseMap }) => {
           attributionPosition="top-left"
         >
           <Background />
+          <Controls showInteractive={false} />
         </ReactFlow>
       </div>
     </div>

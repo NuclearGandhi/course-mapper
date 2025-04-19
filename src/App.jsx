@@ -95,7 +95,6 @@ const App = () => {
   return (
     <div style={{ width: '100vw', height: '100vh' }}>
         <ReactFlow
-          colorMode="dark"
           nodes={elements.nodes.map(node => ({
             ...node,
             data: {
@@ -121,6 +120,7 @@ const App = () => {
           edges={elements.edges.map(edge => ({
             ...edge
           }))}
+          colorMode="dark"
           fitView
           panOnDrag
           nodesDraggable
