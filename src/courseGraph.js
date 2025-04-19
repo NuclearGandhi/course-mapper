@@ -55,8 +55,8 @@ export function courseNodesAndEdges(courseMap) {
   const edges = [];
   const edgeSet = new Set(); // Track unique edge ids
   const nodeIds = Object.keys(courseMap);
-  const xStep = 350;
-  const yStep = 120;
+  const xStep = 220; // was 350, now more compact
+  const yStep = 90;  // was 120, now more compact
   let x = 0;
   let y = 0;
   nodeIds.forEach((id, idx) => {
@@ -71,7 +71,7 @@ export function courseNodesAndEdges(courseMap) {
         id: id,
       },
       position: { x, y },
-      style: { minWidth: 180, maxWidth: 250, borderRadius: 8, padding: 8 },
+      style: { width: 150, height: 40, borderRadius: 8, padding: 8 }, // was 180x50, now more compact
     });
   });
   nodeIds.forEach(id => {
@@ -91,7 +91,7 @@ export function courseNodesAndEdges(courseMap) {
 
 export function applyDagreLayout(nodes, edges) {
   const g = new dagre.graphlib.Graph();
-  g.setGraph({ rankdir: 'TB', marginx: 50, marginy: 100 }); // Increased marginy for larger vertical spacing
+  g.setGraph({ rankdir: 'RL', marginx: 20, marginy: 40 }); // Right-to-left layout
   g.setDefaultEdgeLabel(() => ({}));
 
   // Add nodes to the graph
@@ -113,9 +113,12 @@ export function applyDagreLayout(nodes, edges) {
     return {
       ...node,
       position: {
-        x: nodeWithPosition.x, // Center the node horizontally
-        y: nodeWithPosition.y, // Center the node vertically
+        x: nodeWithPosition.x,
+        y: nodeWithPosition.y,
       },
+      style: { ...node.style, width: 180, height: 50 },
+      sourcePosition: 'left',
+      targetPosition: 'right',
     };
   });
 
