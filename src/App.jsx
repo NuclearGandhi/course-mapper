@@ -102,8 +102,9 @@ const App = () => {
           elementsSelectable
           onNodeClick={(_, n) => setSelected(n.id)}
           onNodeDoubleClick={(_, n) => setPopupCourse(rawCourses[n.id])}
+          attributionPosition='top-left'
         >
-          <MiniMap/>
+          <MiniMap nodeStrokeColor={n => n.data.color} nodeColor={n => n.data.color} nodeBorderRadius={2} />
           <Controls 
             className="custom-controls"
           />
