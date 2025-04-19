@@ -122,7 +122,9 @@ body, html, .App {
 
 .react-flow__node.selectable.selected {
   border-color: var(--xy-theme-selected);
-  box-shadow: var(--xy-node-boxshadow-default);
+  border-width: 3px;
+  box-shadow: 0 0 12px 2px var(--xy-theme-selected, #F57DBD);
+  z-index: 20;
 }
 
 .react-flow__node.selectable.highlighted {
@@ -175,20 +177,20 @@ body, html, .App {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: #23272f;
-  color: #fff;
-  border: 2px solid var(--xy-theme-selected, #0af);
+  background: var(--xy-node-background-color-default, #23272f);
+  color: var(--xy-node-color-default, #fff);
+  border: 2px solid var(--xy-theme-selected, #F57DBD);
   border-radius: 12px;
   padding: 24px;
   z-index: 1000;
   min-width: 300px;
-  box-shadow: 0 0 32px #000a;
+  box-shadow: 0 0 32px rgba(0,0,0,0.3);
 }
 .react-flow__info-popup-close {
   float: left;
   background: none;
   border: none;
-  color: #fff;
+  color: var(--xy-node-color-default, #fff);
   font-size: 20px;
   cursor: pointer;
 }
