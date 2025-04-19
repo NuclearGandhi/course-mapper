@@ -202,3 +202,21 @@ body, html, .App {
   text-align: right;
   font-size: 15px;
 }
+
+/* Highlight AND prerequisites: solid blue border */
+.prereq-and.react-flow__node {
+  border: 2.5px solid #2196f3 !important;
+  box-shadow: 0 0 8px 0 #2196f366;
+}
+
+/* Highlight OR prerequisites: dashed orange border */
+.prereq-or.react-flow__node {
+  border: 2.5px dashed #ff9800 !important;
+  box-shadow: 0 0 8px 0 #ff980066;
+}
+
+/* If a node is both AND and OR, show a purple border */
+.prereq-and.prereq-or.react-flow__node {
+  border: 2.5px double #9c27b0 !important;
+  box-shadow: 0 0 10px 0 #9c27b066;
+}

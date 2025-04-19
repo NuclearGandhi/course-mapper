@@ -12,11 +12,28 @@ function getAllPrereqs(courseMap, courseNum, visited = new Set()) {
   return visited;
 }
 
+// Helper to traverse prereqTree and collect node ids by logic type
+function collectPrereqHighlights(tree, type = null, result = { and: new Set(), or: new Set() }) {
+  if (!tree) return result;
+  if (typeof tree === 'string') {
+    if (type) result[type].add(tree);
+    return result;
+  }
+  if (tree.and) {
+    tree.and.forEach(child => collectPrereqHighlights(child, 'and', result));
+  } else if (tree.or) {
+    tree.or.forEach(child => collectPrereqHighlights(child, 'or', result));
+  }
+  return result;
+}
+
 const App = () => {
   const [elements, setElements] = useState({ nodes: [], edges: [] });
   const [courseMap, setCourseMap] = useState({});
   const [selected, setSelected] = useState(null);
   const [highlighted, setHighlighted] = useState(new Set());
+  const [highlightedAnd, setHighlightedAnd] = useState(new Set());
+  const [highlightedOr, setHighlightedOr] = useState(new Set());
   const [popupCourse, setPopupCourse] = useState(null);
   const [rawCourses, setRawCourses] = useState({});
 
@@ -64,8 +81,14 @@ const App = () => {
   useEffect(() => {
     if (selected && courseMap[selected]) {
       setHighlighted(new Set(getAllPrereqs(courseMap, selected)));
+      const tree = courseMap[selected].prereqTree;
+      const highlights = collectPrereqHighlights(tree);
+      setHighlightedAnd(highlights.and);
+      setHighlightedOr(highlights.or);
     } else {
       setHighlighted(new Set());
+      setHighlightedAnd(new Set());
+      setHighlightedOr(new Set());
     }
   }, [selected, courseMap]);
 
@@ -86,7 +109,10 @@ const App = () => {
                 </div>
               )
             },
-            className: `${node.className || ''}${highlighted.has(node.id) ? ' highlighted' : ''}`,
+            className: `${node.className || ''}
+              ${highlightedAnd.has(node.id) ? ' prereq-and' : ''}
+              ${highlightedOr.has(node.id) ? ' prereq-or' : ''}
+              ${highlighted.has(node.id) ? ' highlighted' : ''}`,
             style: {
               ...node.style,
               zIndex: node.id === selected ? 10 : undefined,

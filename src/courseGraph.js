@@ -12,7 +12,49 @@ export function parsePrerequisites(prereqStr) {
     .filter(s => /^\d{8}$/.test(s));
 }
 
-// Build a map: courseNum -> { name, prereqs: [courseNum, ...], semesters: ["חורף", "אביב"] }
+// Parse prerequisites string to a logical tree (AND/OR/parentheses)
+export function parsePrerequisiteTree(prereqStr) {
+  if (!prereqStr) return null;
+  // Tokenize: numbers, 'או', 'ו', ',', '(', ')'
+  const tokens = prereqStr
+    .replace(/[()]/g, m => ` ${m} `)
+    .replace(/,/g, ' , ')
+    .replace(/או/g, ' או ')
+    .replace(/ו/g, ' ו ')
+    .split(/\s+/)
+    .filter(Boolean);
+
+  let pos = 0;
+  function parseExpr() {
+    let items = [];
+    let op = null;
+    while (pos < tokens.length) {
+      let t = tokens[pos];
+      if (t === '(') {
+        pos++;
+        items.push(parseExpr());
+      } else if (t === ')') {
+        pos++;
+        break;
+      } else if (t === 'או' || t === ',' || t === 'ו') {
+        op = t;
+        pos++;
+      } else if (/^\d{8}$/.test(t)) {
+        items.push(t);
+        pos++;
+      } else {
+        pos++;
+      }
+    }
+    if (op === 'או') return { or: items };
+    if (op === ',' || op === 'ו') return { and: items };
+    if (items.length === 1) return items[0];
+    return { and: items };
+  }
+  return parseExpr();
+}
+
+// Build a map: courseNum -> { name, prereqs: [courseNum, ...], prereqTree: logicTree, semesters: ["חורף", "אביב"] }
 export function buildCourseMap(courses, semesterLabel) {
   const map = {};
   courses.forEach(course => {
@@ -25,6 +67,7 @@ export function buildCourseMap(courses, semesterLabel) {
         map[num] = {
           name,
           prereqs: parsePrerequisites(prereqStr),
+          prereqTree: parsePrerequisiteTree(prereqStr), // Store parsed logic tree
           semesters: [semesterLabel],
         };
       } else {
