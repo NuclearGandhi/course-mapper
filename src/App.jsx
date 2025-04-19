@@ -103,10 +103,6 @@ const App = () => {
               ...node.style,
               zIndex: node.id === selected ? 10 : undefined,
             },
-            selected: node.id === selected,
-            draggable: true,
-            onClick: (_, n) => setSelected(n.id),
-            onDoubleClick: (_, n) => setPopupCourse(rawCourses[n.id]),
           }))}
           edges={elements.edges.map(edge => ({
             ...edge
