@@ -12,23 +12,10 @@ function getAllPrereqs(courseMap, courseNum, visited = new Set()) {
 }
 
 const InfoPopup = ({ course, onClose }) => (
-  <div style={{
-    position: 'fixed',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    background: '#23272f',
-    color: '#fff',
-    border: '2px solid #0af',
-    borderRadius: 12,
-    padding: 24,
-    zIndex: 1000,
-    minWidth: 300,
-    boxShadow: '0 0 32px #000a',
-  }}>
-    <button onClick={onClose} style={{ float: 'left', background: 'none', border: 'none', color: '#fff', fontSize: 20, cursor: 'pointer' }}>×</button>
-    <h2 style={{ textAlign: 'right', marginTop: 0 }}>{course['שם מקצוע']}</h2>
-    <div style={{ textAlign: 'right', fontSize: 15 }}>
+  <div className="info-popup">
+    <button className="info-popup-close" onClick={onClose}>×</button>
+    <h2 className="info-popup-title">{course['שם מקצוע']}</h2>
+    <div className="info-popup-details">
       <b>מספר מקצוע:</b> {course['מספר מקצוע']}<br />
       <b>נקודות:</b> {course['נקודות'] || '-'}<br />
       <b>קדם:</b> {course['מקצועות קדם'] || '-'}<br />
@@ -95,14 +82,15 @@ const App = () => {
             data: {
               ...node.data,
               label: (
-                <div style={{ textAlign: 'right', color: highlighted.has(node.id) ? '#ff0' : '#fff' }}>
+                <div className={`node-label${highlighted.has(node.id) ? ' highlighted-label' : ''}`}>
                   <b>{node.data.name}</b>
-                  <div style={{ fontSize: 12, color: '#0af' }}>
+                  <div className="node-label-id">
                     {node.data.id} [{node.data.semesters && node.data.semesters.map(s => s === 'חורף' ? 'חורף' : 'אביב').join(', ')}]
                   </div>
                 </div>
               )
             },
+            className: `${node.className || ''}${highlighted.has(node.id) ? ' highlighted' : ''}`,
             style: {
               ...node.style,
               zIndex: node.id === selected ? 10 : undefined,
