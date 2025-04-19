@@ -6,22 +6,30 @@ import CourseGraphView from './CourseGraphView';
 
 const InfoPopup = ({ course, onClose, courseMap }) => {
   const courseId = course?.['מספר מקצוע'];
-  // Build subgraph for the popup
+  // Build subgraph for the popup: include all prereqs and all dependents recursively
+  // Collect all prerequisites recursively
+  const collectAllPrereqs = (courseId, map, acc = {}) => {
+    if (!map[courseId] || acc[courseId]) return acc;
+    acc[courseId] = map[courseId];
+    map[courseId].prereqs.forEach(pr => collectAllPrereqs(pr, map, acc));
+    return acc;
+  };
+  // Collect all dependents recursively
+  const collectAllDependents = (courseId, map, acc = {}) => {
+    for (const [id, course] of Object.entries(map)) {
+      if (course.prereqs.includes(courseId) && !acc[id]) {
+        acc[id] = course;
+        collectAllDependents(id, map, acc);
+      }
+    }
+    return acc;
+  };
   const subCourseMap = React.useMemo(() => {
     if (!courseId) return {};
-    const subMap = {};
-    if (courseMap[courseId]) subMap[courseId] = courseMap[courseId];
-    if (courseMap[courseId]?.prereqs) {
-      courseMap[courseId].prereqs.forEach(pr => {
-        if (courseMap[pr]) subMap[pr] = courseMap[pr];
-      });
-    }
-    Object.entries(courseMap).forEach(([id, c]) => {
-      if (c.prereqs && c.prereqs.includes(courseId)) {
-        subMap[id] = c;
-      }
-    });
-    return subMap;
+    // Merge all prereqs and all dependents (including the course itself)
+    const prereqs = collectAllPrereqs(courseId, courseMap);
+    const dependents = collectAllDependents(courseId, courseMap);
+    return { ...prereqs, ...dependents };
   }, [courseId, courseMap]);
   const { nodes, edges } = courseNodesAndEdges(subCourseMap);
   const layoutedNodes = applyDagreLayout(nodes, edges);
@@ -38,7 +46,7 @@ const InfoPopup = ({ course, onClose, courseMap }) => {
       <CourseGraphView
         nodes={layoutedNodes}
         edges={edges}
-        style={{ width: '100%', height: 180, margin: '16px auto 0 auto', background: '#23272f', borderRadius: 8 }}
+        style={{ width: '100%', height: 480, margin: '16px auto 0 auto', background: '#23272f', borderRadius: 8 }}
       />
     </div>
   );
