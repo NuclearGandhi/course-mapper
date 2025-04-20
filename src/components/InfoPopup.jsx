@@ -35,13 +35,57 @@ const InfoPopup = ({ course, onClose, courseMap }) => {
   const { nodes, edges } = courseNodesAndEdges(subCourseMap);
   const layoutedNodes = applyDagreLayout(nodes, edges);
 
-  const prereqs = courseMap[courseId]?.prereqs || [];
-  console.log('prereqs', prereqs);
-
+  const prereqs = React.useMemo(() => courseMap[courseId]?.prereqs || [], [courseId, courseMap]);
+  
   // Helper for tooltip state
   const [hoveredPrereq, setHoveredPrereq] = React.useState(null);
   const [tooltipPos, setTooltipPos] = React.useState({ x: 0, y: 0, text: '' });
   const detailsRef = React.useRef();
+
+  // Create sets for highlighting in the graph
+  const highlightedNodes = React.useMemo(() => {
+    const highlighted = new Set();
+    if (courseId && courseMap[courseId]) {
+      // Include direct prerequisites
+      prereqs.forEach(pr => highlighted.add(pr));
+      highlighted.add(courseId);
+    }
+    return highlighted;
+  }, [courseId, courseMap, prereqs]);
+
+  // Calculate highlighted edges
+  const highlightedEdges = React.useMemo(() => {
+    const edgeSet = new Set();
+    if (courseId && prereqs.length > 0) {
+      prereqs.forEach(pr => {
+        const edgeId = `${pr}->${courseId}`;
+        edgeSet.add(edgeId);
+      });
+    }
+    return edgeSet;
+  }, [courseId, prereqs]);
+
+  // Calculate AND/OR prereqs if available
+  const { highlightedAnd, highlightedOr } = React.useMemo(() => {
+    const and = new Set();
+    const or = new Set();
+    
+    if (courseId && courseMap[courseId]?.prereqTree) {
+      const tree = courseMap[courseId].prereqTree;
+      // Simple extraction of AND/OR nodes from prereqTree
+      if (tree.and) {
+        tree.and.forEach(child => {
+          if (typeof child === 'string') and.add(child);
+        });
+      } else if (tree.or) {
+        tree.or.forEach(child => {
+          if (typeof child === 'string') or.add(child);
+        });
+      }
+    }
+    
+    return { highlightedAnd: and, highlightedOr: or };
+  }, [courseId, courseMap]);
 
   return (
     <div className="react-flow__info-popup">
@@ -91,7 +135,13 @@ const InfoPopup = ({ course, onClose, courseMap }) => {
       <CourseGraphView
         nodes={layoutedNodes}
         edges={edges}
+        selected={courseId}
+        highlighted={highlightedNodes}
+        highlightedAnd={highlightedAnd}
+        highlightedOr={highlightedOr}
+        highlightedEdges={highlightedEdges}
         style={{ width: '100%', height: 480, margin: '16px auto 0 auto', background: '#23272f', borderRadius: 8 }}
+        fitView
       />
     </div>
   );
