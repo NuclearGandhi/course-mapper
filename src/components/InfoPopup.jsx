@@ -3,6 +3,7 @@ import { ReactFlow, Background, Controls } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { courseNodesAndEdges, applyDagreLayout } from '../courseGraph';
 import CourseGraphView from './CourseGraphView';
+import './InfoPopup.css';
 
 const InfoPopup = ({ course, onClose, courseMap }) => {
   const courseId = course?.['מספר מקצוע'];
@@ -46,7 +47,7 @@ const InfoPopup = ({ course, onClose, courseMap }) => {
     <div className="react-flow__info-popup">
       <button className="react-flow__info-popup-close" onClick={onClose}>×</button>
       <h2 className="react-flow__info-popup-title">{course['שם מקצוע']}</h2>
-      <div className="react-flow__info-popup-details" ref={detailsRef} style={{ position: 'relative' }}>
+      <div className="react-flow__info-popup-details" ref={detailsRef}>
         <b>מספר מקצוע:</b> {course['מספר מקצוע']}<br />
         <b>נקודות:</b> {course['נקודות'] || '-'}<br />
         <b>קדמים:</b>{' '}
@@ -76,22 +77,7 @@ const InfoPopup = ({ course, onClose, courseMap }) => {
                   style={{
                     left: tooltipPos.x,
                     top: tooltipPos.y - 5,
-                    transform: 'translateX(-50%) translateY(-100%)', // Center horizontally and position above
-                    position: 'absolute',
-                    pointerEvents: 'none',
                     visibility: hoveredPrereq === pr && tooltipPos.text ? 'visible' : 'hidden',
-                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                    color: 'white',
-                    padding: '8px 12px', // Increased padding for more height
-                    borderRadius: '4px',
-                    zIndex: 1000,
-                    whiteSpace: 'nowrap', // Prevent text wrapping
-                    maxWidth: '300px',
-                    textAlign: 'center',
-                    boxShadow: '0px 1px 4px rgba(0,0,0,0.2)',
-                    lineHeight: '1.5', // Increased line height for better text spacing
-                    fontSize: '14px', // Set explicit font size
-                    minHeight: '24px', // Set minimum height
                   }}
                 >
                   {courseMap[pr]?.name || ''}
@@ -105,7 +91,7 @@ const InfoPopup = ({ course, onClose, courseMap }) => {
       <CourseGraphView
         nodes={layoutedNodes}
         edges={edges}
-        style={{ width: '100%', height: 480, margin: '16px auto 0 auto', background: '#23272f', borderRadius: 8 }}
+        className="course-graph-container"
       />
     </div>
   );

@@ -2,6 +2,8 @@
   margin: 0 auto;
   text-align: center;
   overflow: hidden !important;
+
+  --color-hoverable-text: #a78bfa;
 }
 
 body, html, .App {
@@ -216,13 +218,13 @@ body, html, .App {
   cursor: pointer;
   margin-left: 4px;
   margin-right: 4px;
-  border-bottom: 1px dotted #7c4dff;
+  border-bottom: 1px dotted var(--color-hoverable-text);
   color: #7c4dff;
   transition: color 0.15s;
 }
 .prereq-hoverable:hover {
   color: #fff;
-  background: #7c4dff;
+  background: var(--color-hoverable-text);
   border-radius: 4px;
 }
 .prereq-tooltip {
@@ -237,7 +239,7 @@ body, html, .App {
   white-space: nowrap;
   font-size: 13px;
   box-shadow: 0 2px 12px rgba(124,77,255,0.18);
-  border: 1px solid #7c4dff;
+  border: 1px solid var(--color-hoverable-text);
   z-index: 1001;
   pointer-events: none;
 }

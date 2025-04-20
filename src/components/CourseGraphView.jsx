@@ -1,6 +1,7 @@
 import React from 'react';
 import { ReactFlow, Background, Controls, MiniMap } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
+import './CourseGraphView.css';
 
 // General reusable course graph view
 const CourseGraphView = ({ nodes, edges, selected, highlighted, highlightedAnd, highlightedOr, highlightedEdges, showControls, showMiniMap, style, ...props }) => {
@@ -40,8 +41,8 @@ const CourseGraphView = ({ nodes, edges, selected, highlighted, highlightedAnd, 
         {...props}
       >
         <Background />
-        {showControls && <Controls showInteractive={false} />} {/* Show controls if specified */}
-        {showMiniMap && <MiniMap />} {/* Show minimap if specified */}
+        {showControls && <Controls showInteractive={false} />}
+        {showMiniMap && <MiniMap />}
       </ReactFlow>
     </div>
   );
