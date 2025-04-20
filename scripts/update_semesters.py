@@ -59,21 +59,30 @@ def main():
     last_semesters = get_last_semesters()
     print("Fetched last semesters from the server")
     
-    # Ensure the data directory exists
-    os.makedirs("data", exist_ok=True)
+    # Define paths for both regular data directory and public data directory
+    data_dir = "data"
+    public_data_dir = "public/data"
     
-    # Save the last semesters to a JSON file
-    with open("data/last_semesters.json", "w") as f:
-        json.dump(last_semesters, f, indent=4)
-    print("Updated last_semesters.json")
-
+    # Ensure directories exist
+    os.makedirs(data_dir, exist_ok=True)
+    os.makedirs(public_data_dir, exist_ok=True)
+    
+    # Save the last semesters to JSON files in both locations
+    for directory in [data_dir, public_data_dir]:
+        with open(f"{directory}/last_semesters.json", "w") as f:
+            json.dump(last_semesters, f, indent=4)
+    print("Updated last_semesters.json in both data and public/data directories")
+    
     latest_winter, latest_spring = get_latest_two_semesters(last_semesters)
-
+    
+    # Save course data to both directories
     if latest_winter:
-        fetch_and_save_courses(latest_winter, "data/last_winter_semester.json")
+        fetch_and_save_courses(latest_winter, f"{data_dir}/last_winter_semester.json")
+        fetch_and_save_courses(latest_winter, f"{public_data_dir}/last_winter_semester.json")
     if latest_spring:
-        fetch_and_save_courses(latest_spring, "data/last_spring_semester.json")
-    print("Updated last_winter_semester.json and last_spring_semester.json")
+        fetch_and_save_courses(latest_spring, f"{data_dir}/last_spring_semester.json")
+        fetch_and_save_courses(latest_spring, f"{public_data_dir}/last_spring_semester.json")
+    print("Updated last_winter_semester.json and last_spring_semester.json in both data and public/data directories")
 
 if __name__ == "__main__":
     main()

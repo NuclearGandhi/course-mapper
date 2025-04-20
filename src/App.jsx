@@ -29,6 +29,15 @@ function collectPrereqHighlights(tree, type = null, result = { and: new Set(), o
   return result;
 }
 
+// Helper function to resolve paths relative to the base URL of the app
+const resolvePath = (path) => {
+  // Remove any leading slash
+  const cleanPath = path.startsWith('/') ? path.substring(1) : path;
+  // Get base URL from import.meta.env
+  const base = import.meta.env.BASE_URL || '/';
+  return `${base}${cleanPath}`;
+};
+
 const App = () => {
   const [elements, setElements] = useState({ nodes: [], edges: [] });
   const [courseMap, setCourseMap] = useState({});
@@ -46,49 +55,68 @@ const App = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const csvText = await fetch(`${import.meta.env.BASE_URL}path/course_numbers.csv`).then(r => r.text());
-      const courseNumbers = new Set(
-        csvText
-          .split('\n')
-          .map(line => line.trim())
-          .filter(line => /^\d{8}$/.test(line))
-      );
-      const [winter, spring] = await Promise.all([
-        fetch(`${import.meta.env.BASE_URL}data/last_winter_semester.json`).then(r => r.json()),
-        fetch(`${import.meta.env.BASE_URL}data/last_spring_semester.json`).then(r => r.json()).catch(() => []),
-      ]);
-      const winterMap = buildCourseMap(winter, 'חורף');
-      const springMap = buildCourseMap(spring, 'אביב');
-      const merged = mergeCourseMaps(winterMap, springMap);
-      const filtered = Object.fromEntries(
-        Object.entries(merged).filter(([num]) => courseNumbers.has(num))
-      );
-      // Find missing prereqs
-      for (const course of Object.values(filtered)) {
-        for (const prereq of course.prereqs) {
-          if (!filtered[prereq] && merged[prereq]) {
-            filtered[prereq] = merged[prereq];
+      try {
+        // Using public directory paths directly
+        const csvText = await fetch(resolvePath('path/course_numbers.csv')).then(r => r.text());
+        const courseNumbers = new Set(
+          csvText
+            .split('\n')
+            .map(line => line.trim())
+            .filter(line => /^\d{8}$/.test(line))
+        );
+        
+        // Use public directory paths for all fetch calls
+        const [winter, spring] = await Promise.all([
+          fetch(resolvePath('data/last_winter_semester.json'))
+            .then(r => {
+              if (!r.ok) throw new Error(`Failed to load winter data: ${r.status}`);
+              return r.json();
+            }),
+          fetch(resolvePath('data/last_spring_semester.json'))
+            .then(r => {
+              if (!r.ok) throw new Error(`Failed to load spring data: ${r.status}`);
+              return r.json();
+            })
+            .catch(err => {
+              console.error("Error loading spring data:", err);
+              return [];
+            }),
+        ]);
+        const winterMap = buildCourseMap(winter, 'חורף');
+        const springMap = buildCourseMap(spring, 'אביב');
+        const merged = mergeCourseMaps(winterMap, springMap);
+        const filtered = Object.fromEntries(
+          Object.entries(merged).filter(([num]) => courseNumbers.has(num))
+        );
+        // Find missing prereqs
+        for (const course of Object.values(filtered)) {
+          for (const prereq of course.prereqs) {
+            if (!filtered[prereq] && merged[prereq]) {
+              filtered[prereq] = merged[prereq];
+            }
           }
         }
+        setCourseMap(filtered);
+        
+        // Prepare searchable items
+        const searchItems = Object.entries(filtered).map(([id, course]) => ({
+          id,
+          name: course.name,
+        }));
+        setSearchableItems(searchItems);
+        
+        // Save raw course info for popups
+        const raw = {};
+        [...winter, ...spring].forEach(c => {
+          if (c.general && c.general['מספר מקצוע']) raw[c.general['מספר מקצוע']] = c.general;
+        });
+        setRawCourses(raw);
+        const { nodes, edges } = courseNodesAndEdges(filtered);
+        const layoutedNodes = applyDagreLayout(nodes, edges);
+        setElements({ nodes: layoutedNodes, edges });
+      } catch (error) {
+        console.error("Error fetching course data:", error);
       }
-      setCourseMap(filtered);
-      
-      // Prepare searchable items
-      const searchItems = Object.entries(filtered).map(([id, course]) => ({
-        id,
-        name: course.name,
-      }));
-      setSearchableItems(searchItems);
-      
-      // Save raw course info for popups
-      const raw = {};
-      [...winter, ...spring].forEach(c => {
-        if (c.general && c.general['מספר מקצוע']) raw[c.general['מספר מקצוע']] = c.general;
-      });
-      setRawCourses(raw);
-      const { nodes, edges } = courseNodesAndEdges(filtered);
-      const layoutedNodes = applyDagreLayout(nodes, edges);
-      setElements({ nodes: layoutedNodes, edges });
     };
     fetchData();
   }, []);
