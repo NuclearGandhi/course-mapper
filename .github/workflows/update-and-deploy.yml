@@ -37,14 +37,6 @@ jobs:
     - name: Run update_semesters.py
       run: python scripts/update_semesters.py
 
-    - name: Commit and push updated data files
-      run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        git add data/
-        git commit -m "Update semester data" -a || echo "No changes to commit"
-        git push
-
   build:
     needs: update-semesters
     runs-on: ubuntu-latest
