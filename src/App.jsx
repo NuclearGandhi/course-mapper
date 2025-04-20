@@ -164,11 +164,7 @@ const App = () => {
   }, [elements.nodes, reactFlowInstance]);
 
   return (
-    <div style={{ width: '100vw', height: '100vh' }}>
-      <SearchBar 
-        courses={searchableItems}
-        onSelectResult={handleSearchSelect}
-      />
+    <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
       <CourseGraphView
         nodes={elements.nodes}
         edges={elements.edges}
@@ -177,13 +173,28 @@ const App = () => {
         highlightedAnd={highlightedAnd}
         highlightedOr={highlightedOr}
         highlightedEdges={highlightedEdges}
-        style={{ width: '100vw', height: '100vh' }}
+        style={{ width: '100%', height: '100%' }}
         onNodeClick={(_, n) => setSelected(n.id)}
         onNodeDoubleClick={(_, n) => setPopupCourse(rawCourses[n.id])}
         onInit={setReactFlowInstance}
         showControls={true}
         showMiniMap={true}
       />
+      
+      <div className="app-floating-elements">
+        <div className="app-logo-section">
+          <img src="public/icons/icon.png" alt="CourseMapper Logo" className="app-logo" />
+          <h1>CourseMapper</h1>
+        </div>
+      </div>
+      
+      <div className="app-search-container">
+        <SearchBar 
+          courses={searchableItems}
+          onSelectResult={handleSearchSelect}
+        />
+      </div>
+      
       {popupCourse && <InfoPopup course={popupCourse} onClose={() => setPopupCourse(null)} courseMap={courseMap} />}
     </div>
   );

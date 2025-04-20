@@ -64,7 +64,7 @@ const CourseGraphView = ({
         zoomOnScroll
         zoomOnPinch
         zoomOnDoubleClick={false}
-        attributionPosition="top-left"
+        attributionPosition="bottom-right"
         onInit={onInit}
         {...props}
       >

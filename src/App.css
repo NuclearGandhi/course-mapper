@@ -10,6 +10,41 @@ body, html, .App {
   overflow: hidden !important;
 }
 
+/* Floating logo styling */
+.app-floating-elements {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 10;
+}
+
+.app-logo-section {
+  display: flex;
+  align-items: center;
+}
+
+.app-logo {
+  height: 36px;
+  width: auto;
+  margin-right: 0.75rem;
+}
+
+.app-floating-elements h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+  color: white;
+}
+
+/* Search bar positioning */
+.app-search-container {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 10;
+  min-width: 300px;
+}
+
 /* Animation keyframes for logo if needed in the future */
 @keyframes logo-spin {
   from {
