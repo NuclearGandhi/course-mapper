@@ -1,51 +1,22 @@
-name: Update and Deploy
+name: Build and Deploy
 
 on:
   push:
     branches:
       - master
-  workflow_dispatch:
-    # Manual trigger with optional input parameters
-    inputs:
-      reason:
-        description: 'Reason for manual run'
-        required: false
-        default: 'Manual update'
 
 # Add permissions needed for the workflow
 permissions:
-  contents: write
   pages: write
   id-token: write
 
 jobs:
-  update-semesters:
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.x'
-
-    - name: Install dependencies
-      run: pip install requests
-
-    - name: Run update_semesters.py
-      run: python scripts/update_semesters.py
-
   build:
-    needs: update-semesters
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      with:
-        ref: 'master'  # Ensure we're using the updated main branch after the data update
 
     - name: Setup Node.js
       uses: actions/setup-node@v4
