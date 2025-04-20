@@ -3,7 +3,7 @@ name: Update and Deploy
 on:
   push:
     branches:
-      - main
+      - master
   workflow_dispatch:
     # Manual trigger with optional input parameters
     inputs:
@@ -45,7 +45,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
-        ref: 'main'  # Ensure we're using the updated main branch after the data update
+        ref: 'master'  # Ensure we're using the updated main branch after the data update
 
     - name: Setup Node.js
       uses: actions/setup-node@v4
