@@ -150,32 +150,36 @@
 
 /* Prerequisite highlighting */
 .prereq-and {
-  border-color: #00cc66 !important;
+  border-color: var(--xy-theme-highlight) !important;
+  border-style: solid !important;
+  border-width: 2px !important;
 }
 
 .prereq-or {
+  border-color: var(--xy-theme-highlight) !important;
   border-style: dashed !important;
+  border-width: 2px !important;
 }
 
-.prereq-or.react-flow__node {
-  border-style: dashed !important;
-}
-
-/* If a node is both AND and OR, keep dashed blue border */
+/* If a node is both AND and OR, use a special style */
 .prereq-and.prereq-or.react-flow__node {
-  border: solid 2px var(--xy-theme-highlight) !important;
+  border-color: var(--xy-theme-highlight) !important;
+  border-style: dashed !important;
+  border-width: 2px !important;
+  background-color: rgba(245, 125, 189, 0.05) !important;
 }
 
 /* Highlighted node styling */
 .highlighted {
-  border-color: #ffcc00 !important;
-  box-shadow: 0 0 10px rgba(255, 204, 0, 0.5) !important;
+  border-color: var(--xy-theme-highlight) !important;
+  border-width: 1px !important;
 }
 
 /* Selected node styling */
 .selected {
-  border-color: #00aaff !important;
-  box-shadow: 0 0 10px rgba(0, 170, 255, 0.5) !important;
+  border-color: var(--xy-theme-selected) !important;
+  border-width: 3px !important;
+  z-index: 20 !important;
 }
 
 /* Semester badges styling */
