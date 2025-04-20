@@ -4,7 +4,20 @@ import '@xyflow/react/dist/style.css';
 import './CourseGraphView.css';
 
 // General reusable course graph view
-const CourseGraphView = ({ nodes, edges, selected, highlighted, highlightedAnd, highlightedOr, highlightedEdges, showControls, showMiniMap, style, ...props }) => {
+const CourseGraphView = ({ 
+  nodes, 
+  edges, 
+  selected, 
+  highlighted, 
+  highlightedAnd, 
+  highlightedOr, 
+  highlightedEdges, 
+  showControls, 
+  showMiniMap, 
+  onInit, 
+  style, 
+  ...props 
+}) => {
   
   // Helper function to render semester badges
   const renderSemesterBadges = (semesters) => {
@@ -52,6 +65,7 @@ const CourseGraphView = ({ nodes, edges, selected, highlighted, highlightedAnd, 
         zoomOnPinch
         zoomOnDoubleClick={false}
         attributionPosition="top-left"
+        onInit={onInit}
         {...props}
       >
         <Background />

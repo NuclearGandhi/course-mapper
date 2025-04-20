@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Background, Controls, MiniMap } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import './App.css';
 import { buildCourseMap, mergeCourseMaps, courseNodesAndEdges, applyDagreLayout } from './courseGraph';
 import InfoPopup from './components/InfoPopup';
 import CourseGraphView from './components/CourseGraphView';
+import SearchBar from './components/SearchBar';
 
 function getAllPrereqs(courseMap, courseNum, visited = new Set()) {
   if (!courseMap[courseNum] || visited.has(courseNum)) return visited;
@@ -38,6 +39,10 @@ const App = () => {
   const [highlightedEdges, setHighlightedEdges] = useState(new Set());
   const [popupCourse, setPopupCourse] = useState(null);
   const [rawCourses, setRawCourses] = useState({});
+  const [searchableItems, setSearchableItems] = useState([]);
+  
+  // Reference to ReactFlow instance for panning to nodes
+  const [reactFlowInstance, setReactFlowInstance] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -67,6 +72,14 @@ const App = () => {
         }
       }
       setCourseMap(filtered);
+      
+      // Prepare searchable items
+      const searchItems = Object.entries(filtered).map(([id, course]) => ({
+        id,
+        name: course.name,
+      }));
+      setSearchableItems(searchItems);
+      
       // Save raw course info for popups
       const raw = {};
       [...winter, ...spring].forEach(c => {
@@ -102,24 +115,49 @@ const App = () => {
     }
   }, [selected, courseMap]);
 
+  // Function to handle search result selection
+  const handleSearchSelect = useCallback((course) => {
+    if (!course || !course.id) return;
+    
+    setSelected(course.id);
+    
+    // Pan the view to focus on the selected node
+    if (reactFlowInstance) {
+      // Find the node coordinates
+      const node = elements.nodes.find(n => n.id === course.id);
+      if (node) {
+        const x = node.position.x;
+        const y = node.position.y;
+        const zoom = 1.5; // Slightly zoomed in for better visibility
+        
+        reactFlowInstance.setCenter(x, y, { zoom, duration: 800 });
+      }
+    }
+  }, [elements.nodes, reactFlowInstance]);
+
   return (
     <div style={{ width: '100vw', height: '100vh' }}>
-        <CourseGraphView
-          nodes={elements.nodes}
-          edges={elements.edges}
-          selected={selected}
-          highlighted={highlighted}
-          highlightedAnd={highlightedAnd}
-          highlightedOr={highlightedOr}
-          highlightedEdges={highlightedEdges}
-          style={{ width: '100vw', height: '100vh' }}
-          onNodeClick={(_, n) => setSelected(n.id)}
-          onNodeDoubleClick={(_, n) => setPopupCourse(rawCourses[n.id])}
-          showControls={true}
-          showMiniMap={true}
-        />
-        {popupCourse && <InfoPopup course={popupCourse} onClose={() => setPopupCourse(null)} courseMap={courseMap} />}
-      </div>
+      <SearchBar 
+        courses={searchableItems}
+        onSelectResult={handleSearchSelect}
+      />
+      <CourseGraphView
+        nodes={elements.nodes}
+        edges={elements.edges}
+        selected={selected}
+        highlighted={highlighted}
+        highlightedAnd={highlightedAnd}
+        highlightedOr={highlightedOr}
+        highlightedEdges={highlightedEdges}
+        style={{ width: '100vw', height: '100vh' }}
+        onNodeClick={(_, n) => setSelected(n.id)}
+        onNodeDoubleClick={(_, n) => setPopupCourse(rawCourses[n.id])}
+        onInit={setReactFlowInstance}
+        showControls={true}
+        showMiniMap={true}
+      />
+      {popupCourse && <InfoPopup course={popupCourse} onClose={() => setPopupCourse(null)} courseMap={courseMap} />}
+    </div>
   );
 };
 
