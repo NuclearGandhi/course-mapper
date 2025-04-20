@@ -91,7 +91,7 @@ const InfoPopup = ({ course, onClose, courseMap }) => {
       <CourseGraphView
         nodes={layoutedNodes}
         edges={edges}
-        className="course-graph-container"
+        style={{ width: '100%', height: 480, margin: '16px auto 0 auto', background: '#23272f', borderRadius: 8 }}
       />
     </div>
   );

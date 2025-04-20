@@ -5,6 +5,19 @@ import './CourseGraphView.css';
 
 // General reusable course graph view
 const CourseGraphView = ({ nodes, edges, selected, highlighted, highlightedAnd, highlightedOr, highlightedEdges, showControls, showMiniMap, style, ...props }) => {
+  
+  // Helper function to render semester badges
+  const renderSemesterBadges = (semesters) => {
+    if (!semesters || semesters.length === 0) return null;
+    
+    return (
+      <div className="semester-badges">
+        {semesters.includes("חורף") && <span className="semester-badge winter">חורף</span>}
+        {semesters.includes("אביב") && <span className="semester-badge spring">אביב</span>}
+      </div>
+    );
+  };
+  
   return (
     <div style={style}>
       <ReactFlow
@@ -18,6 +31,7 @@ const CourseGraphView = ({ nodes, edges, selected, highlighted, highlightedAnd, 
                 <div className="react-flow__node-label-id">
                   {node.data.id}
                 </div>
+                {renderSemesterBadges(node.data.semesters)}
               </div>
             )
           },

@@ -68,6 +68,7 @@
   flex-direction: column;
   border: var(--xy-node-border-default);
   color: var(--xy-node-color, var(--xy-node-color-default));
+  min-height: 60px; /* Increased from the default to fit the badges */
 }
 
 .react-flow__node.selectable:hover, 
@@ -175,4 +176,29 @@
 .selected {
   border-color: #00aaff !important;
   box-shadow: 0 0 10px rgba(0, 170, 255, 0.5) !important;
+}
+
+/* Semester badges styling */
+.semester-badges {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.semester-badge {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.semester-badge.winter {
+  background-color: #00a0c6;
+  color: white;
+}
+
+.semester-badge.spring {
+  background-color: #96cb7f;
+  color: #23272f;
 }
