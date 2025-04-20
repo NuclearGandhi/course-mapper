@@ -183,7 +183,7 @@ const App = () => {
       
       <div className="app-floating-elements">
         <div className="app-logo-section">
-          <img src="public/icons/icon.png" alt="CourseMapper Logo" className="app-logo" />
+          <img src={resolvePath('icons/icon.png')} alt="CourseMapper Logo" className="app-logo" />
           <h1>CourseMapper</h1>
         </div>
       </div>
