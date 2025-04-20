@@ -1,6 +1,7 @@
 import json
 import re
 from pathlib import Path
+import os
 
 import requests
 
@@ -47,6 +48,8 @@ def fetch_and_save_courses(semester, filename):
     courses_url = f"https://raw.githubusercontent.com/michael-maltsev/technion-sap-info-fetcher/gh-pages/courses_{year}_{mapped_sem}.json"
     response = requests.get(courses_url)
     if response.status_code == 200:
+        # Ensure the directory exists
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
         with open(filename, "w", encoding="utf-8") as f:
             json.dump(response.json(), f, ensure_ascii=False, indent=4)
     else:
@@ -54,6 +57,11 @@ def fetch_and_save_courses(semester, filename):
 
 def main():
     last_semesters = get_last_semesters()
+    print("Fetched last semesters from the server")
+    
+    # Ensure the data directory exists
+    os.makedirs("data", exist_ok=True)
+    
     # Save the last semesters to a JSON file
     with open("data/last_semesters.json", "w") as f:
         json.dump(last_semesters, f, indent=4)
