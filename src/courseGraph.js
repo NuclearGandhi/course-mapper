@@ -122,6 +122,7 @@ export function courseNodesAndEdges(courseMap) {
       style: { width: nodeWidth, height: nodeHeight, borderRadius: 8, padding: 8 },
     });
   });
+  
   nodeIds.forEach(id => {
     const course = courseMap[id];
     course.prereqs.forEach(prereq => {
