@@ -12,6 +12,12 @@ on:
         required: false
         default: 'Manual update'
 
+# Add permissions needed for the workflow
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
 jobs:
   update-semesters:
     runs-on: ubuntu-latest
