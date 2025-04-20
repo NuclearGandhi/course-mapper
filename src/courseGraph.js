@@ -102,6 +102,11 @@ export function courseNodesAndEdges(courseMap) {
   const yStep = 90;  // was 120, now more compact
   let x = 0;
   let y = 0;
+  
+  // Use consistent dimensions for node sizing
+  const nodeWidth = 180;
+  const nodeHeight = 70; // Increased to match min-height in CSS
+  
   nodeIds.forEach((id, idx) => {
     x = (idx % 5) * xStep;
     y = Math.floor(idx / 5) * yStep;
@@ -114,7 +119,7 @@ export function courseNodesAndEdges(courseMap) {
         id: id,
       },
       position: { x, y },
-      style: { width: 150, height: 40, borderRadius: 8, padding: 8 }, // was 180x50, now more compact
+      style: { width: nodeWidth, height: nodeHeight, borderRadius: 8, padding: 8 },
     });
   });
   nodeIds.forEach(id => {
@@ -137,9 +142,13 @@ export function applyDagreLayout(nodes, edges) {
   g.setGraph({ rankdir: 'RL', marginx: 20, marginy: 40 }); // Right-to-left layout
   g.setDefaultEdgeLabel(() => ({}));
 
+  // Use consistent dimensions that match the node dimensions in courseNodesAndEdges
+  const nodeWidth = 180;
+  const nodeHeight = 70;
+
   // Add nodes to the graph
   nodes.forEach(node => {
-    g.setNode(node.id, { width: 180, height: 50 });
+    g.setNode(node.id, { width: nodeWidth, height: nodeHeight });
   });
 
   // Add edges to the graph
@@ -159,7 +168,7 @@ export function applyDagreLayout(nodes, edges) {
         x: nodeWithPosition.x,
         y: nodeWithPosition.y,
       },
-      style: { ...node.style, width: 180, height: 50 },
+      style: { ...node.style, width: nodeWidth, height: nodeHeight },
       sourcePosition: 'left',
       targetPosition: 'right',
     };

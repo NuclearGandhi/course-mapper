@@ -209,3 +209,49 @@
   color: #dff0d8;
   border: 1px solid rgba(150, 203, 127, 0.5);
 }
+
+/* Minimap styling */
+.react-flow__minimap {
+  background-color: rgba(35, 39, 47, 0.85);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.react-flow__minimap-mask {
+  fill: rgba(255, 255, 255, 0.1);
+}
+
+.react-flow__minimap-node {
+  fill: #ffffff;
+  stroke: none;
+  opacity: 0.8;
+}
+
+.react-flow__minimap-node.selected {
+  fill: var(--xy-theme-selected);
+}
+
+.react-flow__minimap-node.highlighted {
+  fill: var(--xy-theme-highlight);
+}
+
+.react-flow__minimap-node.prereq-and {
+  fill: var(--xy-theme-highlight);
+  opacity: 0.9;
+}
+
+.react-flow__minimap-node.prereq-or {
+  fill: var(--xy-theme-highlight);
+  opacity: 0.7;
+}
+
+/* Ensures edges are visible on the minimap */
+.react-flow__minimap-edge {
+  stroke: #ffffff;
+  opacity: 0.3;
+}
+
+.react-flow__minimap-edge.highlighted {
+  stroke: var(--xy-theme-highlight);
+  opacity: 0.8;
+}

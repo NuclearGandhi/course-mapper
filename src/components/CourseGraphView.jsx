@@ -70,7 +70,21 @@ const CourseGraphView = ({
       >
         <Background />
         {showControls && <Controls showInteractive={false} />}
-        {showMiniMap && <MiniMap />}
+        {showMiniMap && (
+          <MiniMap 
+            nodeStrokeColor={(n) => {
+              if (selected === n.id) return '#F57DBD';
+              if (highlightedAnd?.has?.(n.id)) return '#F57DBD';
+              if (highlightedOr?.has?.(n.id)) return '#F57DBD';
+              if (highlighted?.has?.(n.id)) return '#F57DBD';
+              return '#ffffff';
+            }}
+            nodeStrokeWidth={3}
+            nodeBorderRadius={8}
+            maskColor="rgba(0, 0, 0, 0.2)"
+            position="bottom-right"
+          />
+        )}
       </ReactFlow>
     </div>
   );
