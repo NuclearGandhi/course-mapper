@@ -46,7 +46,7 @@ const App = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const csvText = await fetch('/path/course_numbers.csv').then(r => r.text());
+      const csvText = await fetch(`${import.meta.env.BASE_URL}path/course_numbers.csv`).then(r => r.text());
       const courseNumbers = new Set(
         csvText
           .split('\n')
@@ -54,8 +54,8 @@ const App = () => {
           .filter(line => /^\d{8}$/.test(line))
       );
       const [winter, spring] = await Promise.all([
-        fetch('/data/last_winter_semester.json').then(r => r.json()),
-        fetch('/data/last_spring_semester.json').then(r => r.json()).catch(() => []),
+        fetch(`${import.meta.env.BASE_URL}data/last_winter_semester.json`).then(r => r.json()),
+        fetch(`${import.meta.env.BASE_URL}data/last_spring_semester.json`).then(r => r.json()).catch(() => []),
       ]);
       const winterMap = buildCourseMap(winter, 'חורף');
       const springMap = buildCourseMap(spring, 'אביב');
