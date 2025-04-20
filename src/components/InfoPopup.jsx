@@ -140,7 +140,14 @@ const InfoPopup = ({ course, onClose, courseMap }) => {
         highlightedAnd={highlightedAnd}
         highlightedOr={highlightedOr}
         highlightedEdges={highlightedEdges}
-        style={{ width: '100%', height: 480, margin: '16px auto 0 auto', background: '#23272f', borderRadius: 8 }}
+        style={{ 
+          width: '100%', 
+          height: 480, 
+          margin: '16px auto 0 auto', 
+          background: '#23272f', 
+          borderRadius: '12px', 
+          overflow: 'hidden' 
+        }}
         fitView
       />
     </div>
