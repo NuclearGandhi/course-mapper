@@ -4,6 +4,13 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
+    # Manual trigger with optional input parameters
+    inputs:
+      reason:
+        description: 'Reason for manual run'
+        required: false
+        default: 'Manual update'
 
 jobs:
   update-semesters:
