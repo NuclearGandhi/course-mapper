@@ -1,27 +1,70 @@
+.react-flow__info-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--xy-node-background-color-default, #23272f);
+  color: var(--xy-node-color-default, #fff);
+  border: 2px solid var(--xy-theme-selected, #F57DBD);
+  border-radius: 12px;
+  padding: 24px;
+  z-index: 1000;
+  min-width: 300px;
+  box-shadow: 0 0 32px rgba(0,0,0,0.3);
+}
+
+.react-flow__info-popup-close {
+  float: left;
+  background: none;
+  border: none;
+  color: var(--xy-node-color-default, #fff);
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.react-flow__info-popup-title {
+  text-align: right;
+  margin-top: 0;
+}
+
 .react-flow__info-popup-details {
+  direction: rtl;
+  text-align: right;
+  font-size: 15px;
   position: relative;
 }
 
 .prereq-hoverable {
+  position: relative;
   cursor: pointer;
-  text-decoration: underline;
-  color: var(--color-hoverable-text);
+  margin-left: 4px;
+  margin-right: 4px;
+  border-bottom: 1px dotted var(--color-hoverable-text);
+  color: #7c4dff;
+  transition: color 0.15s;
+}
+
+.prereq-hoverable:hover {
+  color: #fff;
+  background: var(--color-hoverable-text);
+  border-radius: 4px;
 }
 
 .prereq-tooltip {
   position: absolute;
   pointer-events: none;
-  background-color: rgba(0, 0, 0, 0.8);
-  color: white;
-  padding: 8px 12px;
-  border-radius: 4px;
-  z-index: 1000;
+  background-color: #fffbe6;
+  color: #23272f;
+  padding: 4px 12px;
+  border-radius: 8px;
+  z-index: 1001;
   white-space: nowrap;
   max-width: 300px;
   text-align: center;
-  box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 12px rgba(124,77,255,0.18);
+  border: 1px solid var(--color-hoverable-text);
   line-height: 1.5;
-  font-size: 14px;
+  font-size: 13px;
   min-height: 24px;
   transform: translateX(-50%) translateY(-100%);
 }
