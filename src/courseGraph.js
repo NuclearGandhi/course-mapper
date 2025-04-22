@@ -119,7 +119,10 @@ export function courseNodesAndEdges(courseMap) {
         id: id,
       },
       position: { x, y },
-      style: { width: nodeWidth, height: nodeHeight, borderRadius: 8, padding: 8 },
+      // In v12, width and height are used as inline styles, not just measured references
+      width: nodeWidth,
+      height: nodeHeight,
+      style: { borderRadius: 8, padding: 8 },
     });
   });
   
@@ -149,7 +152,10 @@ export function applyDagreLayout(nodes, edges) {
 
   // Add nodes to the graph
   nodes.forEach(node => {
-    g.setNode(node.id, { width: nodeWidth, height: nodeHeight });
+    // In v12, prefer actual width/height if available, fallback to measured values
+    const width = node.width || node.measured?.width || nodeWidth;
+    const height = node.height || node.measured?.height || nodeHeight;
+    g.setNode(node.id, { width, height });
   });
 
   // Add edges to the graph
@@ -169,7 +175,6 @@ export function applyDagreLayout(nodes, edges) {
         x: nodeWithPosition.x,
         y: nodeWithPosition.y,
       },
-      style: { ...node.style, width: nodeWidth, height: nodeHeight },
       sourcePosition: 'left',
       targetPosition: 'right',
     };
