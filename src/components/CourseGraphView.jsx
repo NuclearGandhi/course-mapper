@@ -72,7 +72,7 @@ const CourseGraphView = ({
         {showControls && <Controls showInteractive={false} />}
         {showMiniMap && (
           <MiniMap 
-            nodeStrokeColor={(n) => {
+            nodeColor={(n) => {
               if (selected === n.id) return '#F57DBD';
               if (highlightedAnd?.has?.(n.id)) return '#F57DBD';
               if (highlightedOr?.has?.(n.id)) return '#F57DBD';
