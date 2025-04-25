@@ -5,43 +5,101 @@ import dagre from 'dagre';
 // Parse prerequisites string to a logical tree (AND/OR/parentheses)
 export function parsePrerequisiteTree(prereqStr) {
   if (!prereqStr) return null;
-  // Tokenize: numbers, 'או', 'ו', ',', '(', ')'
-  const tokens = prereqStr
+  
+  // Clean and normalize the input string
+  // Replace course number patterns like "00340029" as well as "00340029 ו-" or other variations
+  const normalizedStr = prereqStr
+    .replace(/(\d{8})[\s]*ו-/g, '$1 ו ') // Replace "00340029ו-" with "00340029 ו "
     .replace(/[()]/g, m => ` ${m} `)
     .replace(/,/g, ' , ')
     .replace(/או/g, ' או ')
-    .replace(/ו/g, ' ו ')
+    .replace(/ו/g, ' ו ');  // Ensure spaces around ו
+  
+  // Tokenize: numbers, 'או', 'ו', ',', '(', ')'
+  const tokens = normalizedStr
     .split(/\s+/)
     .filter(Boolean);
-
+    
   let pos = 0;
+  
   function parseExpr() {
-    let items = [];
-    let op = null;
-    while (pos < tokens.length) {
-      let t = tokens[pos];
-      if (t === '(') {
-        pos++;
-        items.push(parseExpr());
-      } else if (t === ')') {
-        pos++;
-        break;
-      } else if (t === 'או' || t === ',' || t === 'ו') {
-        op = t;
-        pos++;
-      } else if (/^\d{8}$/.test(t)) {
-        items.push(t);
-        pos++;
+    const result = parseTerm();
+    
+    // Process OR operations at the top level
+    while (pos < tokens.length && tokens[pos] === 'או') {
+      pos++; // Skip 'או'
+      const right = parseTerm();
+      
+      if (result.or) {
+        // Already an OR expression, add the new term
+        result.or.push(right);
       } else {
-        pos++;
+        // Convert to an OR expression
+        return { or: [result, right] };
       }
     }
-    if (op === 'או') return { or: items };
-    if (op === ',' || op === 'ו') return { and: items };
-    if (items.length === 1) return items[0];
-    return { and: items };
+    
+    return result;
   }
-  return parseExpr();
+  
+  function parseTerm() {
+    let items = [];
+    
+    // Parse the first factor
+    const firstFactor = parseFactor();
+    if (firstFactor !== null) {
+      items.push(firstFactor);
+    }
+    
+    // Process AND operations
+    while (pos < tokens.length && (tokens[pos] === 'ו' || tokens[pos] === ',')) {
+      pos++; // Skip 'ו' or ',')
+      const nextFactor = parseFactor();
+      if (nextFactor !== null) {
+        items.push(nextFactor);
+      }
+    }
+    
+    // If there's only one item, return it directly
+    if (items.length === 1) return items[0];
+    
+    // Otherwise return an AND group (only with non-null items)
+    return { and: items.filter(item => item !== null) };
+  }
+  
+  function parseFactor() {
+    if (pos >= tokens.length) return null;
+    
+    const token = tokens[pos];
+    
+    if (token === '(') {
+      pos++; // Skip '('
+      const expr = parseExpr();
+      
+      if (pos < tokens.length && tokens[pos] === ')') {
+        pos++; // Skip ')'
+      }
+      
+      return expr;
+    }
+    
+    // Check for course numbers (8 digits)
+    if (/^\d{8}$/.test(token)) {
+      pos++; // Skip the course number
+      return token;
+    }
+    
+    // Skip other tokens and return null
+    pos++;
+    return null;
+  }
+  
+  try {
+    return parseExpr();
+  } catch (error) {
+    console.error('Error parsing prerequisite string:', prereqStr, error);
+    return null;
+  }
 }
 
 // Extract all course numbers from a prerequisite tree
