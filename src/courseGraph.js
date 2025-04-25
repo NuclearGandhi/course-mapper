@@ -2,16 +2,6 @@
 
 import dagre from 'dagre';
 
-// Parse prerequisites string to array of course numbers
-export function parsePrerequisites(prereqStr) {
-  if (!prereqStr) return [];
-  return prereqStr
-    .replace(/[()]/g, '')
-    .split(/\s*או\s*|\s*ו\s*|\s+/)
-    .map(s => s.trim())
-    .filter(s => /^\d{8}$/.test(s));
-}
-
 // Parse prerequisites string to a logical tree (AND/OR/parentheses)
 export function parsePrerequisiteTree(prereqStr) {
   if (!prereqStr) return null;
@@ -54,6 +44,33 @@ export function parsePrerequisiteTree(prereqStr) {
   return parseExpr();
 }
 
+// Extract all course numbers from a prerequisite tree
+function extractCourseNumbersFromTree(tree) {
+  const result = new Set();
+  
+  function traverse(node) {
+    if (!node) return;
+    
+    if (typeof node === 'string') {
+      if (/^\d{8}$/.test(node)) {
+        result.add(node);
+      }
+      return;
+    }
+    
+    if (node.and) {
+      node.and.forEach(child => traverse(child));
+    }
+    
+    if (node.or) {
+      node.or.forEach(child => traverse(child));
+    }
+  }
+  
+  traverse(tree);
+  return Array.from(result);
+}
+
 // Build a map: courseNum -> { name, prereqs: [courseNum, ...], prereqTree: logicTree, semesters: ["חורף", "אביב"] }
 export function buildCourseMap(courses, semesterLabel) {
   const map = {};
@@ -64,10 +81,11 @@ export function buildCourseMap(courses, semesterLabel) {
     const prereqStr = general['מקצועות קדם'];
     if (num && name) {
       if (!map[num]) {
+        const prereqTree = parsePrerequisiteTree(prereqStr);
         map[num] = {
           name,
-          prereqs: parsePrerequisites(prereqStr),
-          prereqTree: parsePrerequisiteTree(prereqStr), // Store parsed logic tree
+          prereqs: extractCourseNumbersFromTree(prereqTree),
+          prereqTree: prereqTree,
           semesters: [semesterLabel],
         };
       } else {
