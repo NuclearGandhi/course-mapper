@@ -72,6 +72,9 @@ const CourseGraphView = ({
         {showControls && <Controls showInteractive={false} />}
         {showMiniMap && (
           <MiniMap 
+            draggable={true}
+            panOnDrag={true}
+            pannable={true}
             nodeColor={(n) => {
               if (selected === n.id) return '#F57DBD';
               if (highlightedAnd?.has?.(n.id)) return '#F57DBD';

@@ -2,11 +2,12 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Background, Controls, MiniMap } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import './App.css';
-import { buildCourseMap, mergeCourseMaps, courseNodesAndEdges, applyDagreLayout } from './courseGraph';
+import { buildCourseMap, mergeCourseMaps, courseNodesAndEdges, applySemesterLayout } from './courseGraph';
 import InfoPopup from './components/InfoPopup';
 import CourseGraphView from './components/CourseGraphView';
 import SearchBar from './components/SearchBar';
 
+// Helper to get all prerequisites of a course recursively
 function getAllPrereqs(courseMap, courseNum, visited = new Set()) {
   if (!courseMap[courseNum] || visited.has(courseNum)) return visited;
   visited.add(courseNum);
@@ -49,6 +50,7 @@ const App = () => {
   const [popupCourse, setPopupCourse] = useState(null);
   const [rawCourses, setRawCourses] = useState({});
   const [searchableItems, setSearchableItems] = useState([]);
+  const [semesterData, setSemesterData] = useState(null);
   
   // Reference to ReactFlow instance for panning to nodes
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
@@ -56,14 +58,21 @@ const App = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Using public directory paths directly
-        const csvText = await fetch(resolvePath('path/course_numbers.csv')).then(r => r.text());
-        const courseNumbers = new Set(
-          csvText
-            .split('\n')
-            .map(line => line.trim())
-            .filter(line => /^\d{8}$/.test(line))
-        );
+        // Load mechanical engineering courses data
+        const mechEngCourses = await fetch(resolvePath('path/mechanical_engineering_courses.json'))
+          .then(r => {
+            if (!r.ok) throw new Error(`Failed to load mechanical engineering courses: ${r.status}`);
+            return r.json();
+          });
+        
+        // Store the semester data for layout purposes
+        setSemesterData(mechEngCourses['הנדסת מכונות']);
+          
+        // Create a set of all course numbers from the JSON file
+        const courseNumbers = new Set();
+        Object.values(mechEngCourses['הנדסת מכונות']).forEach(courses => {
+          courses.forEach(courseNum => courseNumbers.add(courseNum));
+        });
         
         // Use public directory paths for all fetch calls
         const [winter, spring] = await Promise.all([
@@ -111,8 +120,10 @@ const App = () => {
           if (c.general && c.general['מספר מקצוע']) raw[c.general['מספר מקצוע']] = c.general;
         });
         setRawCourses(raw);
+        
+        // Process course nodes and edges with the new semester-based layout
         const { nodes, edges } = courseNodesAndEdges(filtered);
-        const layoutedNodes = applyDagreLayout(nodes, edges);
+        const layoutedNodes = applySemesterLayout(nodes, edges, mechEngCourses['הנדסת מכונות']);
         setElements({ nodes: layoutedNodes, edges });
       } catch (error) {
         console.error("Error fetching course data:", error);
