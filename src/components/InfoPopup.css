@@ -10,21 +10,63 @@
   padding: 24px;
   z-index: 1000;
   min-width: 300px;
+  max-width: 90vw;
+  max-height: 90vh;
   box-shadow: 0 0 32px rgba(0,0,0,0.3);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.react-flow__info-popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  position: sticky;
+  top: 0;
 }
 
 .react-flow__info-popup-close {
-  float: left;
   background: none;
   border: none;
   color: var(--xy-node-color-default, #fff);
-  font-size: 20px;
+  font-size: 24px;
   cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  margin-left: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.react-flow__info-popup-close:hover {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .react-flow__info-popup-title {
   text-align: right;
   margin-top: 0;
+  margin-bottom: 0;
+  flex: 1;
+}
+
+.react-flow__info-popup-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: calc(90vh - 80px); /* Adjust based on header size */
+  overflow: hidden;
+}
+
+.react-flow__info-popup-details-container {
+  overflow-y: auto;
+  max-height: 300px;
+  margin-bottom: 16px;
+  padding-right: 8px;
+  direction: rtl; /* For proper RTL scrollbar position */
 }
 
 .react-flow__info-popup-details {
@@ -32,6 +74,23 @@
   text-align: right;
   font-size: 15px;
   position: relative;
+  min-width: 400px;
+  padding-bottom: 12px;
+}
+
+.react-flow__info-popup-graph {
+  flex: 1;
+  min-height: 300px;
+  max-height: 500px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.syllabus-text {
+  display: block;
+  margin-top: 8px;
+  line-height: 1.6;
+  white-space: pre-line; /* Preserve line breaks in syllabus */
 }
 
 .prereq-hoverable {
@@ -69,12 +128,16 @@
   transform: translateX(-50%) translateY(-100%);
 }
 
-.course-graph-container {
-  width: 100%;
-  height: 480px;
-  margin: 16px auto 0 auto;
-  background: #23272f;
-  border-radius: 8px;
+/* Media query for smaller screens */
+@media (max-width: 768px) {
+  .react-flow__info-popup {
+    max-width: 95vw;
+    padding: 16px;
+  }
+  
+  .react-flow__info-popup-details {
+    min-width: unset;
+  }
 }
 
 /* New styles for prerequisite logical operators */

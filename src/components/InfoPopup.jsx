@@ -157,52 +157,61 @@ const InfoPopup = ({ course, onClose, courseMap }) => {
 
   return (
     <div className="react-flow__info-popup">
-      <button className="react-flow__info-popup-close" onClick={onClose}>×</button>
-      <h2 className="react-flow__info-popup-title">{course['שם מקצוע']}</h2>
-      <div className="react-flow__info-popup-details" ref={detailsRef}>
-        <b>מספר מקצוע:</b> {course['מספר מקצוע']}<br />
-        <b>נקודות:</b> {course['נקודות'] || '-'}<br />
-        <b>קדמים:</b>{' '}
-        {courseMap[courseId]?.prereqTree 
-          ? (
-              <>
-                {renderPrereqTree(courseMap[courseId].prereqTree)}
-                {hoveredPrereq && (
-                  <span
-                    className="prereq-tooltip"
-                    style={{
-                      left: tooltipPos.x,
-                      top: tooltipPos.y - 5,
-                      visibility: hoveredPrereq && tooltipPos.text ? 'visible' : 'hidden',
-                    }}
-                  >
-                    {courseMap[hoveredPrereq]?.name || ''}
-                  </span>
-                )}
-              </>
-            )
-          : '-'}
-        <br />
-        <b>סילבוס:</b> {course['סילבוס'] || '-'}<br />
+      <div className="react-flow__info-popup-header">
+        <h2 className="react-flow__info-popup-title">{course['שם מקצוע']}</h2>
+        <button className="react-flow__info-popup-close" onClick={onClose}>×</button>
       </div>
-      <CourseGraphView
-        nodes={layoutedNodes}
-        edges={edges}
-        selected={courseId}
-        highlighted={highlightedNodes}
-        highlightedAnd={highlightedAnd}
-        highlightedOr={highlightedOr}
-        highlightedEdges={highlightedEdges}
-        style={{ 
-          width: '100%', 
-          height: 480, 
-          margin: '16px auto 0 auto', 
-          background: '#23272f', 
-          borderRadius: '12px', 
-          overflow: 'hidden' 
-        }}
-        fitView
-      />
+      
+      <div className="react-flow__info-popup-content">
+        <div className="react-flow__info-popup-details-container">
+          <div className="react-flow__info-popup-details" ref={detailsRef}>
+            <b>מספר מקצוע:</b> {course['מספר מקצוע']}<br />
+            <b>נקודות:</b> {course['נקודות'] || '-'}<br />
+            <b>קדמים:</b>{' '}
+            {courseMap[courseId]?.prereqTree 
+              ? (
+                  <>
+                    {renderPrereqTree(courseMap[courseId].prereqTree)}
+                    {hoveredPrereq && (
+                      <span
+                        className="prereq-tooltip"
+                        style={{
+                          left: tooltipPos.x,
+                          top: tooltipPos.y - 5,
+                          visibility: hoveredPrereq && tooltipPos.text ? 'visible' : 'hidden',
+                        }}
+                      >
+                        {courseMap[hoveredPrereq]?.name || ''}
+                      </span>
+                    )}
+                  </>
+                )
+              : '-'}
+            <br />
+            <b>סילבוס:</b> <span className="syllabus-text">{course['סילבוס'] || '-'}</span><br />
+          </div>
+        </div>
+        
+        <div className="react-flow__info-popup-graph">
+          <CourseGraphView
+            nodes={layoutedNodes}
+            edges={edges}
+            selected={courseId}
+            highlighted={highlightedNodes}
+            highlightedAnd={highlightedAnd}
+            highlightedOr={highlightedOr}
+            highlightedEdges={highlightedEdges}
+            style={{
+              width: '100%', 
+              height: '480px',
+              background: '#23272f', 
+              borderRadius: '12px', 
+              overflow: 'hidden' 
+            }}
+            fitView
+          />
+        </div>
+      </div>
     </div>
   );
 };
