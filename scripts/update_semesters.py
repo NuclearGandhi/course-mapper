@@ -61,56 +61,72 @@ def parse_prerequisite_tree(prereq_str):
     if not prereq_str:
         return None
 
-    # Normalize the string: add spaces around parentheses and operators
     s = prereq_str
     s = re.sub(r'([()])', r' \1 ', s)
     s = re.sub(r'או', ' או ', s)
-    s = re.sub(r'ו-', ' ו ', s)
-    s = re.sub(r'ו', ' ו ', s)
+    # Separate 'ו-' as a conjunction, but not inside 'או'
+    s = re.sub(r'(?<!א)ו-', ' ו- ', s)
+    # Separate standalone 'ו' as a conjunction, but not inside 'או'
+    s = re.sub(r'(?<!א)ו(?![\w-])', ' ו ', s)
     s = re.sub(r',', ' , ', s)
     tokens = [t for t in s.split() if t]
 
     def parse_tokens(tokens):
         def parse_expr(idx):
-            terms = []
+            items = []  # Each item is (op, term)
             op = None
             while idx < len(tokens):
                 token = tokens[idx]
                 if token == '(':  # Start subexpression
                     sub, idx = parse_expr(idx + 1)
-                    terms.append(sub)
+                    items.append((op, sub))
+                    op = None
                 elif token == ')':  # End subexpression
                     idx += 1
                     break
                 elif token == 'או':
                     op = 'or'
                     idx += 1
-                elif token == 'ו' or token == ',':
+                elif token == 'ו' or token == ',' or token == 'ו-':
                     op = 'and'
                     idx += 1
                 elif re.match(r'^\d{8}$', token):
-                    terms.append(token)
+                    items.append((op, token))
+                    op = None
                     idx += 1
                 else:
                     idx += 1  # Skip unknown tokens
 
-                # If next token is an operator, continue; else, check for end of subexpression
-                if idx < len(tokens) and tokens[idx] in ('או', 'ו', ','):
-                    continue
-                elif idx < len(tokens) and tokens[idx] == ')':
-                    continue
-                elif idx < len(tokens) and tokens[idx] == '(': 
-                    continue
-
-            # Build the tree
-            if op == 'or' and len(terms) > 1:
-                return ({'or': terms}, idx)
-            elif op == 'and' and len(terms) > 1:
-                return ({'and': terms}, idx)
-            elif len(terms) == 1:
-                return (terms[0], idx)
+            # Now group items by top-level operator
+            # Remove leading None ops (first term)
+            ops = [o for o, _ in items if o is not None]
+            if not items:
+                return None, idx
+            if not ops:
+                # Only one term
+                return items[0][1], idx
+            # If all ops are the same (and not None), use that
+            if all(o == 'or' for o in ops):
+                return {'or': [t for _, t in items]}, idx
+            if all(o == 'and' for o in ops):
+                return {'and': [t for _, t in items]}, idx
+            # Mixed: group by 'or' at the top, 'and' inside
+            grouped = []
+            current = []
+            for i, (o, t) in enumerate(items):
+                if i == 0 or o == 'and' or o is None:
+                    current.append(t)
+                elif o == 'or':
+                    if len(current) == 1:
+                        grouped.append(current[0])
+                    else:
+                        grouped.append({'and': current})
+                    current = [t]
+            if len(current) == 1:
+                grouped.append(current[0])
             else:
-                return (terms, idx)
+                grouped.append({'and': current})
+            return {'or': grouped}, idx
 
         tree, _ = parse_expr(0)
         return tree
