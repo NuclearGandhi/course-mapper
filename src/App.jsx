@@ -59,16 +59,16 @@ const App = () => {
     const fetchData = async () => {
       try {
         // Load mechanical engineering courses data
-        const mechEngCourses = await fetch(resolvePath('path/mechanical_engineering_courses.json'))
+        const coursePaths = await fetch(resolvePath('path/course_paths.json'))
           .then(r => {
-            if (!r.ok) throw new Error(`Failed to load mechanical engineering courses: ${r.status}`);
+            if (!r.ok) throw new Error(`Failed to load course paths: ${r.status}`);
             return r.json();
           });
         
         // Store the semester data for layout purposes
         // Create a set of all course numbers from the JSON file
         const courseNumbers = new Set();
-        Object.values(mechEngCourses['הנדסת מכונות']).forEach(courses => {
+        Object.values(coursePaths['הנדסת מכונות']).forEach(courses => {
           courses.forEach(courseNum => courseNumbers.add(courseNum));
         });
         
@@ -122,7 +122,7 @@ const App = () => {
         
         // Process course nodes and edges with the new semester-based layout
         const { nodes, edges } = courseNodesAndEdges(filtered);
-        const layoutedNodes = applySemesterLayout(nodes, edges, mechEngCourses['הנדסת מכונות']);
+        const layoutedNodes = applySemesterLayout(nodes, edges, coursePaths['הנדסת מכונות']);
         setElements({ nodes: layoutedNodes, edges });
       } catch (error) {
         console.error("Error fetching course data:", error);
