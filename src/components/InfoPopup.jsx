@@ -159,10 +159,10 @@ const InfoPopup = ({ course, onClose, courseMap }) => {
   return (
     <div className="react-flow__info-popup">
       <div className="react-flow__info-popup-header">
-        <h2 className="react-flow__info-popup-title">{course['שם מקצוע']}</h2>
         <button className="react-flow__info-popup-close" onClick={onClose}>
           <IoClose size={24} />
         </button>
+        <h2 className="react-flow__info-popup-title">{course['שם מקצוע']}</h2>
       </div>
       
       <div className="react-flow__info-popup-content">

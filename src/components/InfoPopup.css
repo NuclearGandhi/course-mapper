@@ -35,7 +35,6 @@
   cursor: pointer;
   padding: 8px;
   border-radius: 50%;
-  margin-left: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -43,12 +42,7 @@
   width: 40px;
   height: 40px;
   line-height: 1;
-}
-
-.react-flow__info-popup-close:hover,
-.react-flow__info-popup-close:focus {
-  background-color: rgba(255, 255, 255, 0.15);
-  outline: none;
+  margin-right: 8px; /* Changed from margin-left to margin-right */
 }
 
 .react-flow__info-popup-title {
