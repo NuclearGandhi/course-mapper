@@ -1,6 +1,7 @@
 import React from 'react';
 import { ReactFlow, Background, Controls } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
+import { IoClose } from 'react-icons/io5';
 import { courseNodesAndEdges, applyDagreLayout, extractCourseNumbersFromTree } from '../courseGraph';
 import CourseGraphView from './CourseGraphView';
 import './InfoPopup.css';
@@ -159,7 +160,9 @@ const InfoPopup = ({ course, onClose, courseMap }) => {
     <div className="react-flow__info-popup">
       <div className="react-flow__info-popup-header">
         <h2 className="react-flow__info-popup-title">{course['שם מקצוע']}</h2>
-        <button className="react-flow__info-popup-close" onClick={onClose}>×</button>
+        <button className="react-flow__info-popup-close" onClick={onClose}>
+          <IoClose size={24} />
+        </button>
       </div>
       
       <div className="react-flow__info-popup-content">

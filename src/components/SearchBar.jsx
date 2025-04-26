@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { IoClose } from 'react-icons/io5';
 import './SearchBar.css';
 
 const SearchBar = ({ courses, onSelectResult, className }) => {
@@ -133,7 +134,7 @@ const SearchBar = ({ courses, onSelectResult, className }) => {
             onClick={() => setSearchQuery('')}
             aria-label="נקה חיפוש"
           >
-            ×
+            <IoClose size={18} />
           </button>
         )}
       </div>
