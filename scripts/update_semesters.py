@@ -60,116 +60,63 @@ def fetch_and_save_courses(semester, filename):
 def parse_prerequisite_tree(prereq_str):
     if not prereq_str:
         return None
-    
-    # Clean and normalize the input string
-    # Handle punctuation and Hebrew conjunctions ("ו-" for AND, "או" for OR)
-    normalized_str = prereq_str
-    
-    # Replace Hebrew conjunction "ו-" after a course number (e.g. "12345678ו-" becomes "12345678 ו ")
-    normalized_str = re.sub(r'(\d{8})[\s]*ו-', r'\1 ו ', normalized_str)
-    # Replace standalone "ו-" with space-padded "ו"
-    normalized_str = re.sub(r'ו-', ' ו ', normalized_str)
-    
-    # Add spaces around parentheses and other operators for tokenization
-    normalized_str = re.sub(r'[(]', ' ( ', normalized_str)
-    normalized_str = re.sub(r'[)]', ' ) ', normalized_str)
-    normalized_str = re.sub(r',', ' , ', normalized_str)
-    normalized_str = re.sub(r'או', ' או ', normalized_str)
-    normalized_str = re.sub(r'ו', ' ו ', normalized_str)
-    
-    # Split into tokens and filter out empty strings
-    tokens = [t for t in normalized_str.split() if t]
-    
-    # Debug the tokens
-    # print(f"Tokens for '{prereq_str}': {tokens}")
-    
-    # Current position in token stream
-    pos = [0]  # Use a list for pass-by-reference behavior in the nested functions
-    
-    def parse_expr():
-        """Parse an expression which can include OR operations"""
-        # First parse a term which can be a course number or an AND group
-        term = parse_term()
-        if term is None:
-            return None
-        
-        # Check if we have OR operations
-        or_terms = []
-        
-        while pos[0] < len(tokens) and tokens[pos[0]] == 'או':
-            pos[0] += 1  # Skip 'או'
-            right = parse_term()
-            if right is not None:
-                if not or_terms:  # First OR encountered
-                    or_terms = [term]  # Add the first term to the list
-                or_terms.append(right)
-        
-        if or_terms:
-            return {'or': or_terms}
-        else:
-            return term
-    
-    def parse_term():
-        """Parse a term which can include AND operations"""
-        # Parse a factor (course number or parenthesized expression)
-        factor = parse_factor()
-        if factor is None:
-            return None
-        
-        # Check for AND operations
-        and_factors = []
-        
-        # If we have a factor, add it to our list
-        and_factors = [factor]
-        
-        # Keep adding factors as long as we see 'ו' (AND) or ',' (also treated as AND)
-        while pos[0] < len(tokens) and (tokens[pos[0]] == 'ו' or tokens[pos[0]] == ','):
-            pos[0] += 1  # Skip 'ו' or ','
-            next_factor = parse_factor()
-            if next_factor is not None:
-                and_factors.append(next_factor)
-        
-        # If we only found one factor, return it directly
-        if len(and_factors) == 1:
-            return and_factors[0]
-        else:
-            # Otherwise return an AND group
-            return {'and': and_factors}
-    
-    def parse_factor():
-        """Parse a factor (course ID or parenthesized expression)"""
-        if pos[0] >= len(tokens):
-            return None
-        
-        token = tokens[pos[0]]
-        
-        if token == '(':
-            # Skip the opening parenthesis
-            pos[0] += 1
-            
-            # Parse the expression inside the parentheses
-            expr = parse_expr()
-            
-            # Expect a closing parenthesis
-            if pos[0] < len(tokens) and tokens[pos[0]] == ')':
-                pos[0] += 1  # Skip the closing parenthesis
+
+    # Normalize the string: add spaces around parentheses and operators
+    s = prereq_str
+    s = re.sub(r'([()])', r' \1 ', s)
+    s = re.sub(r'או', ' או ', s)
+    s = re.sub(r'ו-', ' ו ', s)
+    s = re.sub(r'ו', ' ו ', s)
+    s = re.sub(r',', ' , ', s)
+    tokens = [t for t in s.split() if t]
+
+    def parse_tokens(tokens):
+        def parse_expr(idx):
+            terms = []
+            op = None
+            while idx < len(tokens):
+                token = tokens[idx]
+                if token == '(':  # Start subexpression
+                    sub, idx = parse_expr(idx + 1)
+                    terms.append(sub)
+                elif token == ')':  # End subexpression
+                    idx += 1
+                    break
+                elif token == 'או':
+                    op = 'or'
+                    idx += 1
+                elif token == 'ו' or token == ',':
+                    op = 'and'
+                    idx += 1
+                elif re.match(r'^\d{8}$', token):
+                    terms.append(token)
+                    idx += 1
+                else:
+                    idx += 1  # Skip unknown tokens
+
+                # If next token is an operator, continue; else, check for end of subexpression
+                if idx < len(tokens) and tokens[idx] in ('או', 'ו', ','):
+                    continue
+                elif idx < len(tokens) and tokens[idx] == ')':
+                    continue
+                elif idx < len(tokens) and tokens[idx] == '(': 
+                    continue
+
+            # Build the tree
+            if op == 'or' and len(terms) > 1:
+                return ({'or': terms}, idx)
+            elif op == 'and' and len(terms) > 1:
+                return ({'and': terms}, idx)
+            elif len(terms) == 1:
+                return (terms[0], idx)
             else:
-                # Missing closing parenthesis, but try to recover
-                print(f"Warning: Missing closing parenthesis in '{prereq_str}'")
-            
-            return expr
-        
-        # Check if token is a course number (8 digits)
-        elif re.match(r'^\d{8}$', token):
-            pos[0] += 1  # Move past this token
-            return token
-        else:
-            # Skip unrecognized tokens
-            pos[0] += 1
-            return None
-    
+                return (terms, idx)
+
+        tree, _ = parse_expr(0)
+        return tree
+
     try:
-        return parse_expr()
+        return parse_tokens(tokens)
     except Exception as e:
         print(f"Error parsing prerequisite string: '{prereq_str}'. Error: {str(e)}")
         return None
