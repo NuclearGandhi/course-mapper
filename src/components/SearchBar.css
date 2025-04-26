@@ -1,3 +1,9 @@
+:root {
+  --font-size-small: 0.875em;    /* Was 12px, now ~ 14px (assuming 16px browser default) */
+  --font-size-base: 1em;         /* Was 14px, now 16px */
+  --font-size-large: 1.25em;     /* Was 18px, now 20px */
+}
+
 .search-container {
   position: absolute;
   top: 16px;
@@ -21,7 +27,7 @@
   background-color: rgba(35, 39, 47, 0.8);
   color: white;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: var(--font-size-base);
   backdrop-filter: blur(8px);
   box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
   transition: all 0.2s;
@@ -39,19 +45,26 @@
   background: none;
   border: none;
   color: rgba(255, 255, 255, 0.6);
-  font-size: 20px;
+  font-size: var(--font-size-large);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: var(--font-size-large);
+  height: var(--font-size-large);
   border-radius: 50%;
+  transition: all 0.2s ease;
+  padding: 0; /* Ensure no padding distorts the shape */
 }
 
 .search-clear:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.15);
   color: white;
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.3);
+}
+
+.search-clear:focus {
+  outline: none;
 }
 
 .search-results {
@@ -66,13 +79,14 @@
 }
 
 .search-result {
+  direction: rtl;
   padding: 10px 14px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   transition: background-color 0.15s;
-  text-align: left;
+  text-align: start;
 }
 
 .search-result:last-child {
@@ -89,13 +103,13 @@
 }
 
 .result-id {
-  font-size: 12px;
+  font-size: var(--font-size-small);
   opacity: 0.7;
   font-weight: 500;
 }
 
 .result-name {
-  font-size: 14px;
+  font-size: var(--font-size-base);
   margin-top: 2px;
 }
 
@@ -106,7 +120,7 @@
   padding: 8px 14px;
   background-color: rgba(255, 255, 255, 0.05);
   color: rgba(255, 255, 255, 0.7);
-  font-size: 12px;
+  font-size: var(--font-size-small);
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -137,7 +151,7 @@
   color: rgba(255, 255, 255, 0.7);
   border-radius: 8px;
   text-align: center;
-  font-size: 14px;
+  font-size: var(--font-size-base);
   backdrop-filter: blur(8px);
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -154,7 +168,7 @@
   border-radius: 4px;
   background-color: rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 0.8);
-  font-size: 12px;
+  font-size: var(--font-size-small);
   margin-left: 6px;
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
