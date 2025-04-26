@@ -28,6 +28,26 @@ const SearchBar = ({ courses, onSelectResult, className }) => {
     setCurrentIndex(results.length > 0 ? 0 : -1);
   }, [searchQuery, courses]);
 
+  // Add global keyboard listener for the "/" key
+  useEffect(() => {
+    const handleGlobalKeyDown = (e) => {
+      // Focus the search input when "/" is pressed outside of an input field
+      if (e.key === '/' && 
+          e.target.tagName !== 'INPUT' && 
+          e.target.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+        inputRef.current?.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleGlobalKeyDown);
+    
+    // Clean up the event listener when component unmounts
+    return () => {
+      document.removeEventListener('keydown', handleGlobalKeyDown);
+    };
+  }, []);
+
   // Handle keyboard navigation
   const handleKeyDown = (e) => {
     if (e.key === 'Escape') {
