@@ -97,6 +97,63 @@ const InfoPopup = ({ course, onClose, courseMap }) => {
     
     return { highlightedAnd: and, highlightedOr: or };
   }, [courseId, courseMap]);
+  
+  // Helper function to render prereq tree with logical structure
+  const renderPrereqTree = React.useCallback((tree, depth = 0) => {
+    if (!tree) return null;
+    
+    // If it's just a course number string
+    if (typeof tree === 'string') {
+      return (
+        <span
+          className="prereq-hoverable"
+          onMouseEnter={e => {
+            setHoveredPrereq(tree);
+            const rect = e.target.getBoundingClientRect();
+            const parentRect = detailsRef.current?.getBoundingClientRect();
+            setTooltipPos({
+              x: rect.left - (parentRect?.left || 0) + rect.width / 2,
+              y: rect.top - (parentRect?.top || 0),
+              text: courseMap[tree]?.name || ''
+            });
+          }}
+          onMouseLeave={() => setHoveredPrereq(null)}
+        >
+          {tree}
+        </span>
+      );
+    }
+    
+    // Handle AND condition
+    if (tree.and) {
+      return (
+        <span className="prereq-logic-group">
+          {tree.and.map((child, index) => (
+            <React.Fragment key={`and-${depth}-${index}`}>
+              {index > 0 && <span className="prereq-logic-operator"> וגם </span>}
+              {renderPrereqTree(child, depth + 1)}
+            </React.Fragment>
+          ))}
+        </span>
+      );
+    }
+    
+    // Handle OR condition
+    if (tree.or) {
+      return (
+        <span className="prereq-logic-group">
+          {tree.or.map((child, index) => (
+            <React.Fragment key={`or-${depth}-${index}`}>
+              {index > 0 && <span className="prereq-logic-operator"> או </span>}
+              {renderPrereqTree(child, depth + 1)}
+            </React.Fragment>
+          ))}
+        </span>
+      );
+    }
+    
+    return null;
+  }, [courseMap]);
 
   return (
     <div className="react-flow__info-popup">
@@ -106,39 +163,24 @@ const InfoPopup = ({ course, onClose, courseMap }) => {
         <b>מספר מקצוע:</b> {course['מספר מקצוע']}<br />
         <b>נקודות:</b> {course['נקודות'] || '-'}<br />
         <b>קדמים:</b>{' '}
-        {Array.isArray(prereqs) && prereqs.length > 0
-          ? prereqs.map((pr, i) => (
-              <React.Fragment key={pr}>
-                <span
-                  className="prereq-hoverable"
-                  onMouseEnter={e => {
-                    setHoveredPrereq(pr);
-                    const rect = e.target.getBoundingClientRect();
-                    const parentRect = detailsRef.current?.getBoundingClientRect();
-                    setTooltipPos({
-                      x: rect.left - (parentRect?.left || 0) + rect.width / 2,
-                      y: rect.top - (parentRect?.top || 0),
-                      text: courseMap[pr]?.name || ''
-                    });
-                  }}
-                  onMouseLeave={() => setHoveredPrereq(null)}
-                >
-                  {pr}
-                </span>
-                {i < prereqs.length - 1 && <span key={pr + '-comma'}>, </span>}
-                {/* Always render the tooltip, but control its visibility */}
-                <span
-                  className="prereq-tooltip"
-                  style={{
-                    left: tooltipPos.x,
-                    top: tooltipPos.y - 5,
-                    visibility: hoveredPrereq === pr && tooltipPos.text ? 'visible' : 'hidden',
-                  }}
-                >
-                  {courseMap[pr]?.name || ''}
-                </span>
-              </React.Fragment>
-            ))
+        {courseMap[courseId]?.prereqTree 
+          ? (
+              <>
+                {renderPrereqTree(courseMap[courseId].prereqTree)}
+                {hoveredPrereq && (
+                  <span
+                    className="prereq-tooltip"
+                    style={{
+                      left: tooltipPos.x,
+                      top: tooltipPos.y - 5,
+                      visibility: hoveredPrereq && tooltipPos.text ? 'visible' : 'hidden',
+                    }}
+                  >
+                    {courseMap[hoveredPrereq]?.name || ''}
+                  </span>
+                )}
+              </>
+            )
           : '-'}
         <br />
         <b>סילבוס:</b> {course['סילבוס'] || '-'}<br />

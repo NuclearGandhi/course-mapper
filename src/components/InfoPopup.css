@@ -77,3 +77,27 @@
   border-radius: 8px;
 }
 
+/* New styles for prerequisite logical operators */
+.prereq-logic-operator {
+  font-weight: bold;
+  color: #f57dbd;
+  margin: 0 4px;
+}
+
+.prereq-logic-group {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  padding: 2px 6px;
+  margin: 3px;
+  border-radius: 6px;
+  background: rgba(124, 77, 255, 0.07);
+  border: 1px solid rgba(124, 77, 255, 0.15);
+}
+
+/* Nested groups styling */
+.prereq-logic-group .prereq-logic-group {
+  background: rgba(245, 125, 189, 0.07);
+  border: 1px solid rgba(245, 125, 189, 0.15);
+}
+
