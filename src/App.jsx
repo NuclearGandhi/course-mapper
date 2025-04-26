@@ -54,6 +54,9 @@ const App = () => {
   
   // Reference to ReactFlow instance for panning to nodes
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
+  // Add defaultViewport state for initial positioning
+  const [defaultViewport, setDefaultViewport] = useState(null);
+  const [initialPositionSet, setInitialPositionSet] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -124,12 +127,46 @@ const App = () => {
         const { nodes, edges } = courseNodesAndEdges(filtered);
         const layoutedNodes = applySemesterLayout(nodes, edges, coursePaths['הנדסת מכונות']);
         setElements({ nodes: layoutedNodes, edges });
+        
+        // Set initial viewport position once nodes are available
+        if (layoutedNodes.length > 0) {
+          // Find the topmost nodes (courses from early semesters)
+          const sortedByY = [...layoutedNodes].sort((a, b) => a.position.y - b.position.y);
+          const topNodes = sortedByY.slice(0, 5); // Take the top 5 nodes
+          
+          // Calculate the average x position of top nodes
+          const avgX = topNodes.reduce((sum, node) => sum + node.position.x, 0) / topNodes.length;
+          const topY = sortedByY[0].position.y;
+          
+          // Set default viewport to focus on the top of the graph
+          setDefaultViewport({
+            x: avgX,
+            y: topY - 100, // Position slightly above the topmost node
+            zoom: 1.2,     // Slight zoom for better visibility
+          });
+        }
       } catch (error) {
         console.error("Error fetching course data:", error);
       }
     };
     fetchData();
   }, []);
+
+  // Handle initial positioning when ReactFlow instance is available
+  const onInit = useCallback((instance) => {
+    setReactFlowInstance(instance);
+    if (defaultViewport && !initialPositionSet) {
+      // Use setTimeout to ensure this happens after the component is fully rendered
+      setTimeout(() => {
+        instance.setCenter(
+          defaultViewport.x,
+          defaultViewport.y,
+          { zoom: defaultViewport.zoom, duration: 1000 }
+        );
+        setInitialPositionSet(true);
+      }, 500);
+    }
+  }, [defaultViewport, initialPositionSet]);
 
   useEffect(() => {
     if (selected && courseMap[selected]) {
@@ -186,7 +223,8 @@ const App = () => {
         style={{ width: '100%', height: '100%' }}
         onNodeClick={(_, n) => setSelected(n.id)}
         onNodeDoubleClick={(_, n) => setPopupCourse(rawCourses[n.id])}
-        onInit={setReactFlowInstance}
+        onInit={onInit}
+        fitView={false} // Disable automatic fitView
         showControls={true}
         showMiniMap={true}
       />

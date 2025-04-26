@@ -13,7 +13,8 @@ const CourseGraphView = ({
   highlightedOr, 
   highlightedEdges, 
   showControls, 
-  showMiniMap, 
+  showMiniMap,
+  fitView = true, // Make fitView configurable with default true
   onInit, 
   style, 
   ...props 
@@ -59,7 +60,7 @@ const CourseGraphView = ({
           ...edge,
           className: `${edge.className || ''}${highlightedEdges?.has?.(edge.id) ? ' highlighted' : ''}`
         }))}
-        fitView
+        fitView={fitView}
         panOnDrag
         zoomOnScroll
         zoomOnPinch
