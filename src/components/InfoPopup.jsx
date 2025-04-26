@@ -1,7 +1,7 @@
 import React from 'react';
 import { ReactFlow, Background, Controls } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { courseNodesAndEdges, applyDagreLayout } from '../courseGraph';
+import { courseNodesAndEdges, applyDagreLayout, extractCourseNumbersFromTree } from '../courseGraph';
 import CourseGraphView from './CourseGraphView';
 import './InfoPopup.css';
 
@@ -12,19 +12,26 @@ const InfoPopup = ({ course, onClose, courseMap }) => {
   const collectAllPrereqs = React.useCallback((courseId, map, acc = {}) => {
     if (!map[courseId] || acc[courseId]) return acc;
     acc[courseId] = map[courseId];
-    map[courseId].prereqs.forEach(pr => collectAllPrereqs(pr, map, acc));
+    
+    // Extract prerequisites from prereqTree
+    const prereqs = extractCourseNumbersFromTree(map[courseId].prereqTree);
+    prereqs.forEach(pr => collectAllPrereqs(pr, map, acc));
     return acc;
   }, []);
+  
   // Collect all dependents recursively
   const collectAllDependents = React.useCallback((courseId, map, acc = {}) => {
     for (const [id, course] of Object.entries(map)) {
-      if (course.prereqs.includes(courseId) && !acc[id]) {
+      // Extract prereqs from prereqTree and check if courseId is among them
+      const prereqs = extractCourseNumbersFromTree(course.prereqTree);
+      if (prereqs.includes(courseId) && !acc[id]) {
         acc[id] = course;
         collectAllDependents(id, map, acc);
       }
     }
     return acc;
   }, []);
+  
   const subCourseMap = React.useMemo(() => {
     if (!courseId) return {};
     // Merge all prereqs and all dependents (including the course itself)
@@ -32,10 +39,14 @@ const InfoPopup = ({ course, onClose, courseMap }) => {
     const dependents = collectAllDependents(courseId, courseMap);
     return { ...prereqs, ...dependents };
   }, [courseId, courseMap, collectAllPrereqs, collectAllDependents]);
+  
   const { nodes, edges } = courseNodesAndEdges(subCourseMap);
   const layoutedNodes = applyDagreLayout(nodes, edges);
 
-  const prereqs = React.useMemo(() => courseMap[courseId]?.prereqs || [], [courseId, courseMap]);
+  // Extract prereqs from prereqTree
+  const prereqs = React.useMemo(() => 
+    courseMap[courseId] ? extractCourseNumbersFromTree(courseMap[courseId].prereqTree) : []
+  , [courseId, courseMap]);
   
   // Helper for tooltip state
   const [hoveredPrereq, setHoveredPrereq] = React.useState(null);
@@ -73,11 +84,11 @@ const InfoPopup = ({ course, onClose, courseMap }) => {
     if (courseId && courseMap[courseId]?.prereqTree) {
       const tree = courseMap[courseId].prereqTree;
       // Simple extraction of AND/OR nodes from prereqTree
-      if (tree.and) {
+      if (tree && tree.and) {
         tree.and.forEach(child => {
           if (typeof child === 'string') and.add(child);
         });
-      } else if (tree.or) {
+      } else if (tree && tree.or) {
         tree.or.forEach(child => {
           if (typeof child === 'string') or.add(child);
         });

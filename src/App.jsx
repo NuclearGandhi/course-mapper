@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Background, Controls, MiniMap } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import './App.css';
-import { courseNodesAndEdges, applySemesterLayout } from './courseGraph';
+import { courseNodesAndEdges, applySemesterLayout, extractCourseNumbersFromTree } from './courseGraph';
 import InfoPopup from './components/InfoPopup';
 import CourseGraphView from './components/CourseGraphView';
 import SearchBar from './components/SearchBar';
@@ -11,7 +11,8 @@ import SearchBar from './components/SearchBar';
 function getAllPrereqs(courseMap, courseNum, visited = new Set()) {
   if (!courseMap[courseNum] || visited.has(courseNum)) return visited;
   visited.add(courseNum);
-  courseMap[courseNum].prereqs.forEach(pr => getAllPrereqs(courseMap, pr, visited));
+  const prereqs = extractCourseNumbersFromTree(courseMap[courseNum].prereqTree);
+  prereqs.forEach(pr => getAllPrereqs(courseMap, pr, visited));
   return visited;
 }
 
@@ -50,7 +51,6 @@ const App = () => {
   const [popupCourse, setPopupCourse] = useState(null);
   const [rawCourses, setRawCourses] = useState({});
   const [searchableItems, setSearchableItems] = useState([]);
-  const [semesterData, setSemesterData] = useState(null);
   
   // Reference to ReactFlow instance for panning to nodes
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
@@ -66,8 +66,6 @@ const App = () => {
           });
         
         // Store the semester data for layout purposes
-        setSemesterData(mechEngCourses['הנדסת מכונות']);
-          
         // Create a set of all course numbers from the JSON file
         const courseNumbers = new Set();
         Object.values(mechEngCourses['הנדסת מכונות']).forEach(courses => {
@@ -86,9 +84,10 @@ const App = () => {
           Object.entries(mergedCourses).filter(([num]) => courseNumbers.has(num))
         );
         
-        // Find missing prereqs
+        // Find missing prereqs by extracting course numbers from prereqTree
         for (const course of Object.values(filtered)) {
-          for (const prereq of course.prereqs) {
+          const prereqNumbers = extractCourseNumbersFromTree(course.prereqTree);
+          for (const prereq of prereqNumbers) {
             if (!filtered[prereq] && mergedCourses[prereq]) {
               filtered[prereq] = mergedCourses[prereq];
             }

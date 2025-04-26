@@ -145,31 +145,7 @@ def parse_prerequisite_tree(prereq_str):
         print(f'Error parsing prerequisite string: {prereq_str}, {str(error)}')
         return None
 
-# Python version of extractCourseNumbersFromTree from courseGraph.js
-def extract_course_numbers_from_tree(tree):
-    result = set()
-    
-    def traverse(node):
-        if node is None:
-            return
-        
-        if isinstance(node, str):
-            if re.match(r'^\d{8}$', node):
-                result.add(node)
-            return
-        
-        if 'and' in node:
-            for child in node['and']:
-                traverse(child)
-        
-        if 'or' in node:
-            for child in node['or']:
-                traverse(child)
-    
-    traverse(tree)
-    return list(result)
-
-# Python version of buildCourseMap from courseGraph.js
+# Build a map: courseNum -> { name, prereqTree: logicTree, semesters: ["חורף", "אביב"] }
 def build_course_map(courses, semester_label):
     course_map = {}
     for course in courses:
@@ -182,7 +158,6 @@ def build_course_map(courses, semester_label):
                 prereq_tree = parse_prerequisite_tree(prereq_str)
                 course_map[num] = {
                     'name': name,
-                    'prereqs': extract_course_numbers_from_tree(prereq_tree),
                     'prereqTree': prereq_tree,
                     'semesters': [semester_label],
                 }
@@ -191,13 +166,12 @@ def build_course_map(courses, semester_label):
                     course_map[num]['semesters'].append(semester_label)
     return course_map
 
-# Python version of mergeCourseMaps from courseGraph.js
+# Python version of mergeCourseMaps from courseGraph.js - without 'prereqs' field
 def merge_course_maps(winter_map, spring_map):
     merged = winter_map.copy()
     for num, course in spring_map.items():
         if num in merged:
             merged[num]['semesters'] = list(set(merged[num]['semesters'] + course['semesters']))
-            merged[num]['prereqs'] = list(set(merged[num]['prereqs'] + course['prereqs']))
         else:
             merged[num] = course
     return merged

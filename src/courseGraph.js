@@ -2,6 +2,33 @@
 
 import dagre from 'dagre';
 
+// Extract all course numbers from a prerequisite tree
+export function extractCourseNumbersFromTree(tree) {
+  const result = new Set();
+  
+  function traverse(node) {
+    if (!node) return;
+    
+    if (typeof node === 'string') {
+      if (/^\d{8}$/.test(node)) {
+        result.add(node);
+      }
+      return;
+    }
+    
+    if (node.and) {
+      node.and.forEach(child => traverse(child));
+    }
+    
+    if (node.or) {
+      node.or.forEach(child => traverse(child));
+    }
+  }
+  
+  traverse(tree);
+  return Array.from(result);
+}
+
 // Functions for building the graph visualization
 export function courseNodesAndEdges(courseMap) {
   const nodes = [];
@@ -32,7 +59,8 @@ export function courseNodesAndEdges(courseMap) {
   
   nodeIds.forEach(id => {
     const course = courseMap[id];
-    course.prereqs.forEach(prereq => {
+    const prereqs = extractCourseNumbersFromTree(course.prereqTree);
+    prereqs.forEach(prereq => {
       if (courseMap[prereq]) {
         const edgeId = `${prereq}->${id}`;
         if (!edgeSet.has(edgeId)) {
