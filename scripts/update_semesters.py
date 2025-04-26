@@ -62,87 +62,116 @@ def parse_prerequisite_tree(prereq_str):
         return None
     
     # Clean and normalize the input string
-    # Replace course number patterns like "00340029" as well as "00340029 ו-" or other variations
+    # Handle punctuation and Hebrew conjunctions ("ו-" for AND, "או" for OR)
     normalized_str = prereq_str
-    normalized_str = re.sub(r'(\d{8})[\s]*ו-', r'\1 ו ', normalized_str)  # Replace "00340029ו-" with "00340029 ו "
+    
+    # Replace Hebrew conjunction "ו-" after a course number (e.g. "12345678ו-" becomes "12345678 ו ")
+    normalized_str = re.sub(r'(\d{8})[\s]*ו-', r'\1 ו ', normalized_str)
+    # Replace standalone "ו-" with space-padded "ו"
+    normalized_str = re.sub(r'ו-', ' ו ', normalized_str)
+    
+    # Add spaces around parentheses and other operators for tokenization
     normalized_str = re.sub(r'[(]', ' ( ', normalized_str)
     normalized_str = re.sub(r'[)]', ' ) ', normalized_str)
-    normalized_str = normalized_str.replace(',', ' , ')
-    normalized_str = normalized_str.replace('או', ' או ')
-    normalized_str = normalized_str.replace('ו', ' ו ')  # Ensure spaces around ו
+    normalized_str = re.sub(r',', ' , ', normalized_str)
+    normalized_str = re.sub(r'או', ' או ', normalized_str)
+    normalized_str = re.sub(r'ו', ' ו ', normalized_str)
     
-    # Tokenize: numbers, 'או', 'ו', ',', '(', ')'
+    # Split into tokens and filter out empty strings
     tokens = [t for t in normalized_str.split() if t]
     
-    pos = [0]  # Using a list to allow modification inside nested functions
+    # Debug the tokens
+    # print(f"Tokens for '{prereq_str}': {tokens}")
+    
+    # Current position in token stream
+    pos = [0]  # Use a list for pass-by-reference behavior in the nested functions
     
     def parse_expr():
-        result = parse_term()
+        """Parse an expression which can include OR operations"""
+        # First parse a term which can be a course number or an AND group
+        term = parse_term()
+        if term is None:
+            return None
         
-        # Process OR operations at the top level
+        # Check if we have OR operations
+        or_terms = []
+        
         while pos[0] < len(tokens) and tokens[pos[0]] == 'או':
             pos[0] += 1  # Skip 'או'
             right = parse_term()
-            
-            if isinstance(result, dict) and 'or' in result:
-                # Already an OR expression, add the new term
-                result['or'].append(right)
-            else:
-                # Convert to an OR expression
-                result = {'or': [result, right]}
+            if right is not None:
+                if not or_terms:  # First OR encountered
+                    or_terms = [term]  # Add the first term to the list
+                or_terms.append(right)
         
-        return result
+        if or_terms:
+            return {'or': or_terms}
+        else:
+            return term
     
     def parse_term():
-        items = []
+        """Parse a term which can include AND operations"""
+        # Parse a factor (course number or parenthesized expression)
+        factor = parse_factor()
+        if factor is None:
+            return None
         
-        # Parse the first factor
-        first_factor = parse_factor()
-        if first_factor is not None:
-            items.append(first_factor)
+        # Check for AND operations
+        and_factors = []
         
-        # Process AND operations
+        # If we have a factor, add it to our list
+        and_factors = [factor]
+        
+        # Keep adding factors as long as we see 'ו' (AND) or ',' (also treated as AND)
         while pos[0] < len(tokens) and (tokens[pos[0]] == 'ו' or tokens[pos[0]] == ','):
             pos[0] += 1  # Skip 'ו' or ','
             next_factor = parse_factor()
             if next_factor is not None:
-                items.append(next_factor)
+                and_factors.append(next_factor)
         
-        # If there's only one item, return it directly
-        if len(items) == 1:
-            return items[0]
-        
-        # Otherwise return an AND group (only with non-null items)
-        return {'and': [item for item in items if item is not None]}
+        # If we only found one factor, return it directly
+        if len(and_factors) == 1:
+            return and_factors[0]
+        else:
+            # Otherwise return an AND group
+            return {'and': and_factors}
     
     def parse_factor():
+        """Parse a factor (course ID or parenthesized expression)"""
         if pos[0] >= len(tokens):
             return None
         
         token = tokens[pos[0]]
         
         if token == '(':
-            pos[0] += 1  # Skip '('
+            # Skip the opening parenthesis
+            pos[0] += 1
+            
+            # Parse the expression inside the parentheses
             expr = parse_expr()
             
+            # Expect a closing parenthesis
             if pos[0] < len(tokens) and tokens[pos[0]] == ')':
-                pos[0] += 1  # Skip ')'
+                pos[0] += 1  # Skip the closing parenthesis
+            else:
+                # Missing closing parenthesis, but try to recover
+                print(f"Warning: Missing closing parenthesis in '{prereq_str}'")
             
             return expr
         
-        # Check for course numbers (8 digits)
-        if re.match(r'^\d{8}$', token):
-            pos[0] += 1  # Skip the course number
+        # Check if token is a course number (8 digits)
+        elif re.match(r'^\d{8}$', token):
+            pos[0] += 1  # Move past this token
             return token
-        
-        # Skip other tokens and return None
-        pos[0] += 1
-        return None
+        else:
+            # Skip unrecognized tokens
+            pos[0] += 1
+            return None
     
     try:
         return parse_expr()
-    except Exception as error:
-        print(f'Error parsing prerequisite string: {prereq_str}, {str(error)}')
+    except Exception as e:
+        print(f"Error parsing prerequisite string: '{prereq_str}'. Error: {str(e)}")
         return None
 
 # Build a map: courseNum -> { name, prereqTree: logicTree, semesters: ["חורף", "אביב"] }
