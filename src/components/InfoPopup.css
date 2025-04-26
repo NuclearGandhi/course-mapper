@@ -40,10 +40,15 @@
   align-items: center;
   justify-content: center;
   transition: background-color 0.2s;
+  width: 40px;
+  height: 40px;
+  line-height: 1;
 }
 
-.react-flow__info-popup-close:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+.react-flow__info-popup-close:hover,
+.react-flow__info-popup-close:focus {
+  background-color: rgba(255, 255, 255, 0.15);
+  outline: none;
 }
 
 .react-flow__info-popup-title {
