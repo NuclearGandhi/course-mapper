@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Background, Controls, MiniMap } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import './App.css';
-import { buildCourseMap, mergeCourseMaps, courseNodesAndEdges, applySemesterLayout } from './courseGraph';
+import { courseNodesAndEdges, applySemesterLayout } from './courseGraph';
 import InfoPopup from './components/InfoPopup';
 import CourseGraphView from './components/CourseGraphView';
 import SearchBar from './components/SearchBar';
@@ -74,37 +74,27 @@ const App = () => {
           courses.forEach(courseNum => courseNumbers.add(courseNum));
         });
         
-        // Use public directory paths for all fetch calls
-        const [winter, spring] = await Promise.all([
-          fetch(resolvePath('data/last_winter_semester.json'))
-            .then(r => {
-              if (!r.ok) throw new Error(`Failed to load winter data: ${r.status}`);
-              return r.json();
-            }),
-          fetch(resolvePath('data/last_spring_semester.json'))
-            .then(r => {
-              if (!r.ok) throw new Error(`Failed to load spring data: ${r.status}`);
-              return r.json();
-            })
-            .catch(err => {
-              console.error("Error loading spring data:", err);
-              return [];
-            }),
-        ]);
-        const winterMap = buildCourseMap(winter, 'חורף');
-        const springMap = buildCourseMap(spring, 'אביב');
-        const merged = mergeCourseMaps(winterMap, springMap);
+        // Load the pre-merged course data created by the Python script
+        const mergedCourses = await fetch(resolvePath('data/merged_courses.json'))
+          .then(r => {
+            if (!r.ok) throw new Error(`Failed to load merged course data: ${r.status}`);
+            return r.json();
+          });
+        
+        // Filter to only include courses in the study path
         const filtered = Object.fromEntries(
-          Object.entries(merged).filter(([num]) => courseNumbers.has(num))
+          Object.entries(mergedCourses).filter(([num]) => courseNumbers.has(num))
         );
+        
         // Find missing prereqs
         for (const course of Object.values(filtered)) {
           for (const prereq of course.prereqs) {
-            if (!filtered[prereq] && merged[prereq]) {
-              filtered[prereq] = merged[prereq];
+            if (!filtered[prereq] && mergedCourses[prereq]) {
+              filtered[prereq] = mergedCourses[prereq];
             }
           }
         }
+        
         setCourseMap(filtered);
         
         // Prepare searchable items
@@ -115,6 +105,16 @@ const App = () => {
         setSearchableItems(searchItems);
         
         // Save raw course info for popups
+        // We still need to load the individual semester data for course details
+        const [winter, spring] = await Promise.all([
+          fetch(resolvePath('data/last_winter_semester.json'))
+            .then(r => r.ok ? r.json() : [])
+            .catch(() => []),
+          fetch(resolvePath('data/last_spring_semester.json'))
+            .then(r => r.ok ? r.json() : [])
+            .catch(() => []),
+        ]);
+        
         const raw = {};
         [...winter, ...spring].forEach(c => {
           if (c.general && c.general['מספר מקצוע']) raw[c.general['מספר מקצוע']] = c.general;

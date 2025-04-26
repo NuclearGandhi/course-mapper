@@ -52,14 +52,161 @@ def fetch_and_save_courses(semester, filename):
         os.makedirs(os.path.dirname(filename), exist_ok=True)
         with open(filename, "w", encoding="utf-8") as f:
             json.dump(response.json(), f, ensure_ascii=False, indent=4)
+        return response.json()
     else:
         raise RuntimeError(f"Failed to fetch courses for semester {semester}: {response.status_code}")
+
+# Python version of parsePrerequisiteTree from courseGraph.js
+def parse_prerequisite_tree(prereq_str):
+    if not prereq_str:
+        return None
+    
+    # Clean and normalize the input string
+    # Replace course number patterns like "00340029" as well as "00340029 ו-" or other variations
+    normalized_str = prereq_str
+    normalized_str = re.sub(r'(\d{8})[\s]*ו-', r'\1 ו ', normalized_str)  # Replace "00340029ו-" with "00340029 ו "
+    normalized_str = re.sub(r'[(]', ' ( ', normalized_str)
+    normalized_str = re.sub(r'[)]', ' ) ', normalized_str)
+    normalized_str = normalized_str.replace(',', ' , ')
+    normalized_str = normalized_str.replace('או', ' או ')
+    normalized_str = normalized_str.replace('ו', ' ו ')  # Ensure spaces around ו
+    
+    # Tokenize: numbers, 'או', 'ו', ',', '(', ')'
+    tokens = [t for t in normalized_str.split() if t]
+    
+    pos = [0]  # Using a list to allow modification inside nested functions
+    
+    def parse_expr():
+        result = parse_term()
+        
+        # Process OR operations at the top level
+        while pos[0] < len(tokens) and tokens[pos[0]] == 'או':
+            pos[0] += 1  # Skip 'או'
+            right = parse_term()
+            
+            if isinstance(result, dict) and 'or' in result:
+                # Already an OR expression, add the new term
+                result['or'].append(right)
+            else:
+                # Convert to an OR expression
+                result = {'or': [result, right]}
+        
+        return result
+    
+    def parse_term():
+        items = []
+        
+        # Parse the first factor
+        first_factor = parse_factor()
+        if first_factor is not None:
+            items.append(first_factor)
+        
+        # Process AND operations
+        while pos[0] < len(tokens) and (tokens[pos[0]] == 'ו' or tokens[pos[0]] == ','):
+            pos[0] += 1  # Skip 'ו' or ','
+            next_factor = parse_factor()
+            if next_factor is not None:
+                items.append(next_factor)
+        
+        # If there's only one item, return it directly
+        if len(items) == 1:
+            return items[0]
+        
+        # Otherwise return an AND group (only with non-null items)
+        return {'and': [item for item in items if item is not None]}
+    
+    def parse_factor():
+        if pos[0] >= len(tokens):
+            return None
+        
+        token = tokens[pos[0]]
+        
+        if token == '(':
+            pos[0] += 1  # Skip '('
+            expr = parse_expr()
+            
+            if pos[0] < len(tokens) and tokens[pos[0]] == ')':
+                pos[0] += 1  # Skip ')'
+            
+            return expr
+        
+        # Check for course numbers (8 digits)
+        if re.match(r'^\d{8}$', token):
+            pos[0] += 1  # Skip the course number
+            return token
+        
+        # Skip other tokens and return None
+        pos[0] += 1
+        return None
+    
+    try:
+        return parse_expr()
+    except Exception as error:
+        print(f'Error parsing prerequisite string: {prereq_str}, {str(error)}')
+        return None
+
+# Python version of extractCourseNumbersFromTree from courseGraph.js
+def extract_course_numbers_from_tree(tree):
+    result = set()
+    
+    def traverse(node):
+        if node is None:
+            return
+        
+        if isinstance(node, str):
+            if re.match(r'^\d{8}$', node):
+                result.add(node)
+            return
+        
+        if 'and' in node:
+            for child in node['and']:
+                traverse(child)
+        
+        if 'or' in node:
+            for child in node['or']:
+                traverse(child)
+    
+    traverse(tree)
+    return list(result)
+
+# Python version of buildCourseMap from courseGraph.js
+def build_course_map(courses, semester_label):
+    course_map = {}
+    for course in courses:
+        general = course.get('general', {})
+        num = general.get('מספר מקצוע')
+        name = general.get('שם מקצוע')
+        prereq_str = general.get('מקצועות קדם')
+        if num and name:
+            if num not in course_map:
+                prereq_tree = parse_prerequisite_tree(prereq_str)
+                course_map[num] = {
+                    'name': name,
+                    'prereqs': extract_course_numbers_from_tree(prereq_tree),
+                    'prereqTree': prereq_tree,
+                    'semesters': [semester_label],
+                }
+            else:
+                if semester_label not in course_map[num]['semesters']:
+                    course_map[num]['semesters'].append(semester_label)
+    return course_map
+
+# Python version of mergeCourseMaps from courseGraph.js
+def merge_course_maps(winter_map, spring_map):
+    merged = winter_map.copy()
+    for num, course in spring_map.items():
+        if num in merged:
+            merged[num]['semesters'] = list(set(merged[num]['semesters'] + course['semesters']))
+            merged[num]['prereqs'] = list(set(merged[num]['prereqs'] + course['prereqs']))
+        else:
+            merged[num] = course
+    return merged
 
 def main():
     last_semesters = get_last_semesters()
     print("Fetched last semesters from the server")
     
-    # Only define the public data directory path
+    # Define the public data directory path
     public_data_dir = "public/data"
     
     # Ensure directory exists
@@ -72,12 +219,30 @@ def main():
     
     latest_winter, latest_spring = get_latest_two_semesters(last_semesters)
     
-    # Save course data only to public directory
+    # Save individual semester data and also build merged data
+    winter_courses = None
+    spring_courses = None
+    
     if latest_winter:
-        fetch_and_save_courses(latest_winter, f"{public_data_dir}/last_winter_semester.json")
+        winter_courses = fetch_and_save_courses(latest_winter, f"{public_data_dir}/last_winter_semester.json")
+        print("Updated last_winter_semester.json in public/data directory")
+    
     if latest_spring:
-        fetch_and_save_courses(latest_spring, f"{public_data_dir}/last_spring_semester.json")
-    print("Updated last_winter_semester.json and last_spring_semester.json in public/data directory")
+        spring_courses = fetch_and_save_courses(latest_spring, f"{public_data_dir}/last_spring_semester.json")
+        print("Updated last_spring_semester.json in public/data directory")
+    
+    # Build and merge course maps
+    if winter_courses and spring_courses:
+        winter_map = build_course_map(winter_courses, 'חורף')
+        spring_map = build_course_map(spring_courses, 'אביב')
+        merged_map = merge_course_maps(winter_map, spring_map)
+        
+        # Save the merged map
+        with open(f"{public_data_dir}/merged_courses.json", "w", encoding="utf-8") as f:
+            json.dump(merged_map, f, ensure_ascii=False, indent=4)
+        print("Created merged_courses.json in public/data directory")
+    else:
+        print("Could not create merged_courses.json because one or both semester data files are missing")
 
 if __name__ == "__main__":
     main()
