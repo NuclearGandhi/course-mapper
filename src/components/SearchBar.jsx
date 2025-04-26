@@ -120,7 +120,7 @@ const SearchBar = ({ courses, onSelectResult, className }) => {
         <input
           ref={inputRef}
           type="text"
-          placeholder="Search courses... (Press / to focus)"
+          placeholder="חפש קורסים... (לחץ / להתמקדות)"
           value={searchQuery}
           onChange={e => setSearchQuery(e.target.value)}
           onFocus={() => setIsOpen(true)}
@@ -131,7 +131,7 @@ const SearchBar = ({ courses, onSelectResult, className }) => {
           <button 
             className="search-clear" 
             onClick={() => setSearchQuery('')}
-            aria-label="Clear search"
+            aria-label="נקה חיפוש"
           >
             ×
           </button>
@@ -152,18 +152,18 @@ const SearchBar = ({ courses, onSelectResult, className }) => {
           ))}
           {searchResults.length > 1 && (
             <div className="search-navigation">
-              <span>{currentIndex + 1} of {searchResults.length} results</span>
+              <span>{currentIndex + 1} מתוך {searchResults.length} תוצאות</span>
               <button 
                 onClick={handlePrevResult} 
                 className="nav-button"
-                aria-label="Previous result"
+                aria-label="תוצאה קודמת"
               >
                 ↑
               </button>
               <button 
                 onClick={handleNextResult} 
                 className="nav-button"
-                aria-label="Next result"
+                aria-label="תוצאה הבאה"
               >
                 ↓
               </button>
